@@ -6,7 +6,10 @@ import logging
 import click
 
 
-logging.basicConfig(level=logging.DEBUG, format="[%(asctime)s %(filename)s:%(lineno)s %(funcName)s] %(message)s")
+logging.basicConfig(
+    level=logging.DEBUG,
+    format="[%(asctime)s %(filename)s:%(lineno)s %(funcName)s] %(message)s",
+)
 
 
 async def monitor_url(name, url, interval, statuses):
@@ -14,7 +17,7 @@ async def monitor_url(name, url, interval, statuses):
     Monitors a given url at a regular interval and logs the result to prometheus.
     This co-routine loops forever unless it is externally cancelled, such as to recreate it with new settings.
     """
-  
+
     logging.info(f"starting [{name=}]")
     try:
         while True:
@@ -31,11 +34,13 @@ async def monitor_url(name, url, interval, statuses):
 
                 # Check if the status code was acceptible
                 healthy = status in statuses
-                logging.info(f"polled [{name=}] [{interval=}] [{url=}] [{status=}] [{healthy=}]")
-              
+                logging.info(
+                    f"polled [{name=}] [{interval=}] [{url=}] [{status=}] [{healthy=}]"
+                )
+
                 # Write to Prometheus
                 # TODO export metrics to prometheus
-          
+
             except Exception as ex:
                 logging.exception(f"poll error [{name=}]", exc_info=ex)
 
@@ -49,7 +54,7 @@ async def monitor_url(name, url, interval, statuses):
 
 
 async def watch_events(*args, **kwargs):
-    logging.info('starting watcher')
+    logging.info("starting watcher")
     logging.debug(args)
     logging.debug(kwargs)
     monitors = [
@@ -57,21 +62,17 @@ async def watch_events(*args, **kwargs):
             "name": "airflow",
             "url": "https://airflow.sail-teleport.dk.serp.ac.uk",
             "interval": 10,
-            "expect": { 
-                "status": [200]
-            }
+            "expect": {"status": [200]},
         },
         {
             "name": "rabbitmq",
             "url": "https://rabbitmq.sail-teleport.dk.serp.ac.uk",
             "interval": 10,
-            "expect": { 
-                "status": [200] 
-            }
+            "expect": {"status": [200]},
         },
     ]
 
-    logging.info('listening for events')
+    logging.info("listening for events")
     tasks = dict()
 
     try:
@@ -84,7 +85,9 @@ async def watch_events(*args, **kwargs):
             statuses = monitor["expect"]["status"]
             interval = monitor["interval"] + random.randint(0, 10)
             logging.info(f"spawning monitor [{name=}]")
-            tasks[name] = asyncio.create_task(monitor_url(name, url, interval, statuses))
+            tasks[name] = asyncio.create_task(
+                monitor_url(name, url, interval, statuses)
+            )
 
         # Consume events
         # TODO Subscript to kubes event queue for changes to CanaryHTTPMonitor objects that are visible
@@ -107,14 +110,18 @@ async def watch_events(*args, **kwargs):
             # Create a new task at the desired interval
             if event in ["ADDED", "UPDATED"]:
                 logging.info(f"spawning monitor [{name=}]")
-                tasks[name] = asyncio.create_task(monitor_url(name, url, interval, statuses))
+                tasks[name] = asyncio.create_task(
+                    monitor_url(name, url, interval, statuses)
+                )
 
     except asyncio.CancelledError:
-        logging.info('cancelled watcher')
-        for task in tasks.items():
+        logging.info("cancelled watcher")
+        for task in tasks.values():
             task.cancel()
+
+        await asyncio.gather(*tasks.values())
     finally:
-        logging.info('halting watcher')
+        logging.info("halting watcher")
 
 
 @click.command()
@@ -122,5 +129,5 @@ def main(*args, **kwargs):
     asyncio.run(watch_events(*args, **kwargs))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

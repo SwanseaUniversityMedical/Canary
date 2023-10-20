@@ -1,0 +1,120 @@
+{{- if .Values.controller.enabled }}
+{{- $podNodeSelector := include "canary.podNodeSelector" (dict "Release" .Release "Values" .Values "nodeSelector" .Values.controller.nodeSelector) }}
+{{- $podAffinity := include "canary.podAffinity" (dict "Release" .Release "Values" .Values "affinity" .Values.controller.affinity) }}
+{{- $podTolerations := include "canary.podTolerations" (dict "Release" .Release "Values" .Values "tolerations" .Values.controller.tolerations) }}
+{{- $podSecurityContext := include "canary.podSecurityContext" (dict "Release" .Release "Values" .Values "securityContext" .Values.controller.securityContext) }}
+{{- $volumeMounts := include "canary.volumeMounts" (dict "Release" .Release "Values" .Values "extraVolumeMounts" .Values.controller.extraVolumeMounts) }}
+{{- $volumes := include "canary.volumes" (dict "Release" .Release "Values" .Values "extraVolumes" .Values.controller.extraVolumes) }}
+{{- $env := include "canary.env" (dict "Release" .Release "Values" .Values "extraEnv" .Values.controller.extraEnv) }}
+{{- $envFrom := include "canary.envFrom" (dict "Release" .Release "Values" .Values "extraEnvFrom" .Values.controller.extraEnvFrom) }}
+{{- $containers:= include "canary.containers" (dict "Release" .Release "Values" .Values "extraContainers" .Values.controller.extraContainers) }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "canary.fullname" . }}-controller
+
+  {{- if .Values.controller.annotations }}
+  annotations:
+    {{- toYaml .Values.controller.annotations | nindent 4 }}
+  {{- end }}
+
+  labels:
+    app: {{ include "canary.labels.app" . }}
+    component: controller
+    chart: {{ include "canary.labels.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    {{- if .Values.controller.labels }}
+    {{- toYaml .Values.controller.labels | nindent 4 }}
+    {{- end }}
+
+spec:
+  replicas: {{ .Values.controller.replicas }}
+
+  selector:
+    matchLabels:
+      app: {{ include "canary.labels.app" . }}
+      component: controller
+      release: {{ .Release.Name }}
+
+  template:
+    metadata:
+
+      annotations:
+        {{- if .Values.canary.podAnnotations }}
+        {{- toYaml .Values.canary.podAnnotations | nindent 8 }}
+        {{- end }}
+        {{- if .Values.controller.podAnnotations }}
+        {{- toYaml .Values.controller.podAnnotations | nindent 8 }}
+        {{- end }}
+
+      labels:
+        app: {{ include "canary.labels.app" . }}
+        component: controller
+        release: {{ .Release.Name }}
+        {{- if .Values.controller.podLabels }}
+        {{- toYaml .Values.controller.podLabels | nindent 8 }}
+        {{- end }}
+
+    spec:
+      restartPolicy: Always
+
+      {{- if .Values.controller.image.pullSecret }}
+      imagePullSecrets:
+        - name: {{ .Values.controller.image.pullSecret }}
+      {{- end }}
+
+      {{- if $podNodeSelector }}
+      nodeSelector:
+        {{- $podNodeSelector | nindent 8 }}
+      {{- end }}
+
+      {{- if $podAffinity }}
+      affinity:
+        {{- $podAffinity | nindent 8 }}
+      {{- end }}
+
+      {{- if $podTolerations }}
+      tolerations:
+        {{- $podTolerations | nindent 8 }}
+      {{- end }}
+
+      {{- if $podSecurityContext }}
+      securityContext:
+        {{- $podSecurityContext | nindent 8 }}
+      {{- end }}
+
+      {{- if $volumes }}
+      volumes:
+        {{- $volumes | indent 8 }}
+      {{- end }}
+
+      containers:
+        - name: controller
+          {{- include "canary.image" (dict "image" .Values.controller.image) | indent 10 }}
+
+          {{- if $volumeMounts }}
+          volumeMounts:
+            {{- $volumeMounts | indent 12 }}
+          {{- end }}
+
+          envFrom:
+            {{- if $envFrom }}
+            {{- $envFrom | indent 12 }}
+            {{- end }}
+
+          env:
+            - name: CANARY_PROMETHEUS_HOSTNAME
+              value: "{{ .Values.canary.prometheus.hostname }}"
+
+            {{- if $env }}
+            {{- $env | indent 12 }}
+            {{- end }}
+
+          resources:
+            {{- toYaml .Values.controller.resources | nindent 12 }}
+
+        {{- if $containers }}
+        {{- $containers | nindent 8 }}
+        {{- end }}
+{{- end }}
