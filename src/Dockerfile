@@ -11,4 +11,5 @@ RUN apk update && apk add --update --no-cache \
 RUN pip install -r /requirements.txt --no-cache-dir && \
     rm /requirements.txt
 
-CMD ["python", "/main.py"]
+ENTRYPOINT ["python", "/main.py"]
+#CMD ["--help"]
