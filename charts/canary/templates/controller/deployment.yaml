@@ -112,7 +112,7 @@ spec:
             {{- end }}
 
           resources:
-            {{- toYaml .Values.web.resources | nindent 12 }}
+            {{- toYaml .Values.controller.resources | nindent 12 }}
 
         {{- if $containers }}
         {{- $containers | nindent 8 }}
