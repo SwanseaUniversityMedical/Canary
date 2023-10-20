@@ -44,8 +44,11 @@ jobs:
       container-registry-project: ${{ vars.HARBOR_PROJECT }}
       container-registry-repo: canary
       slack-channel: ${{ vars.SLACK_CHANNEL }}
+      cosign-public-key: ${{ vars.COSIGN_PUBLIC_KEY }}
       build-command: |
         docker build -t $IMAGE -f containers/canary/Dockerfile .
     secrets:
+      cosign-private-key: ${{ secrets.COSIGN_PRIVATE_KEY }}
+      cosign-password: ${{ secrets.COSIGN_PASSWORD }}
       container-registry-token: ${{ secrets.HARBOR_TOKEN }}
       slack-token: ${{ secrets.SLACK_TOKEN }}
