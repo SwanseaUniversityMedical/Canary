@@ -54,17 +54,17 @@ async def watch_events(*args, **kwargs):
     logging.debug(kwargs)
     monitors = [
         {
-            "name": "publications",
-            "url": "https://www.josswhittle.com/publications/",
-            "interval": 1,
+            "name": "airflow",
+            "url": "https://airflow.sail-teleport.dk.serp.ac.uk",
+            "interval": 10,
             "expect": { 
                 "status": [200]
             }
         },
         {
-            "name": "about",
-            "url": "https://www.josswhittle.com/aboutme/",
-            "interval": 1,
+            "name": "rabbitmq",
+            "url": "https://rabbitmq.sail-teleport.dk.serp.ac.uk",
+            "interval": 10,
             "expect": { 
                 "status": [200] 
             }
@@ -82,7 +82,7 @@ async def watch_events(*args, **kwargs):
             name = monitor["name"]
             url = monitor["url"]
             statuses = monitor["expect"]["status"]
-            interval = monitor["interval"] + random.randint(5, 10)
+            interval = monitor["interval"] + random.randint(0, 10)
             logging.info(f"spawning monitor [{name=}]")
             tasks[name] = asyncio.create_task(monitor_url(name, url, interval, statuses))
 
@@ -95,7 +95,7 @@ async def watch_events(*args, **kwargs):
             name = monitor["name"]
             url = monitor["url"]
             statuses = monitor["expect"]["status"]
-            interval = monitor["interval"] + random.randint(5, 10)
+            interval = monitor["interval"] + random.randint(0, 10)
             event = "UPDATED"
 
             # Cancel the task if it already exists
