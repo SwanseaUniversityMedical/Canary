@@ -8,7 +8,7 @@ RUN apk update && apk add --update --no-cache \
     pip install pyclean --no-cache-dir && \
     pip install -r /opt/requirements.txt --no-cache-dir && \
     rm /opt/requirements.txt && \
-    pyclean -v ~/.local && \
+    pyclean -v / && \
     pip uninstall -y pyclean && \
     apk del py3-pip && \
     rm -rf /var/cache/apk/*
