@@ -1,8 +1,11 @@
-trino:
+crd:
+  enabled: true
+
+controller:
   enabled: true
 
   image:
-    repository: harbor.ukserp.ac.uk/dare/trino
+    repository: harbor.ukserp.ac.uk/canary/canary
     tag: 1.0.0
     pullPolicy: IfNotPresent
     pullSecret: ""
