@@ -5,8 +5,11 @@ COPY src/ /opt/
 RUN apk update && apk add --update --no-cache \
 	python3 \
     py3-pip && \
+    pip install pyclean --no-cache-dir && \
     pip install -r /opt/requirements.txt --no-cache-dir && \
     rm /opt/requirements.txt && \
+    pyclean -v ~/.local && \
+    pip uninstall -y pyclean && \
     apk del py3-pip && \
     rm -rf /var/cache/apk/*
 
