@@ -1,9 +1,11 @@
 canary:
 
+  prometheus:
+    hostname:
+
   defaultNodeSelector: {}
   defaultAffinity: {}
   defaultTolerations: []
-
   defaultSecurityContext:
     fsGroup: 0
 
@@ -30,16 +32,12 @@ controller:
   replicas: 1
 
   resources: {}
-
   nodeSelector: {}
   affinity: {}
   tolerations: []
-
   securityContext: {}
-
   labels: {}
   podLabels: {}
-
   annotations: {}
   podAnnotations: {}
 

@@ -105,7 +105,7 @@ spec:
 
           env:
             - name: CANARY_PROMETHEUS_HOSTNAME
-              value: "{{ .Values.controller.prometheus.hostname }}"
+              value: "{{ .Values.canary.prometheus.hostname }}"
 
             {{- if $env }}
             {{- $env | indent 12 }}
