@@ -1,0 +1,6 @@
+apiVersion: v2
+appVersion: 1.0.0
+description: Canary HTTP Monitor
+name: canary
+type: application
+version: 1.0.0
