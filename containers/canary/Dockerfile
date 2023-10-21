@@ -6,7 +6,7 @@ RUN apk update && \
     apk add --update --no-cache \
 	python3 \
         py3-pip \
-	gcc
+	alpine-sdk
     
 RUN mkdir -p /wheels && \
     pip wheel -w /wheels -r requirements.txt
@@ -18,6 +18,7 @@ COPY --from=base /wheels /wheels
 
 RUN pip install pyclean --no-cache-dir && \
     pip install /wheels/* --no-cache-dir && \
+    rm -rf /wheels && \
     pyclean -v /usr && \
     pip uninstall -y pyclean && \
     apk del py3-pip && \
