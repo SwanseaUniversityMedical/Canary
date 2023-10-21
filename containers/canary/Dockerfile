@@ -1,5 +1,4 @@
 FROM python:3.11.6-alpine3.18 as base
-
 COPY src/requirements.txt /requirements.txt
 
 RUN apk update && \
@@ -11,7 +10,7 @@ RUN apk update && \
 RUN mkdir -p /wheels && \
     pip wheel -w /wheels -r requirements.txt
     
-FROM python:3.11.6-alpine3.18
+FROM python:3.11.6-alpine3.18 as expanded
 COPY src/ /opt/
 COPY --from=base /wheels /wheels
 
@@ -22,6 +21,9 @@ RUN pip install pyclean --no-cache-dir && \
     pip uninstall -y pyclean && \
     rm -rf /var/cache/apk/* && \
     rm -rf /tmp/*
+
+FROM scratch
+COPY --from=expanded / /
 
 ENTRYPOINT ["python3", "/opt/canary.py"]
 #CMD ["--help"]
