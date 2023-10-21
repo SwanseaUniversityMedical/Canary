@@ -1,4 +1,4 @@
-FROM python:3.11.0-alpine3.18 as base
+FROM python:3.11.6-alpine3.18 as base
 
 COPY src/requirements.txt /requirements.txt
 
@@ -11,8 +11,7 @@ RUN apk update && \
 RUN mkdir -p /wheels && \
     pip wheel -w /wheels -r requirements.txt
     
-FROM python:3.11.0-alpine3.18
-
+FROM python:3.11.6-alpine3.18
 COPY src/ /opt/
 COPY --from=base /wheels /wheels
 
