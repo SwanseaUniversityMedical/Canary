@@ -8,7 +8,7 @@ RUN apk update && \
         py3-pip
     
 RUN mkdir -p /wheels && \
-    pip wheel -w /wheels .
+    pip wheel -w /wheels -r requirements.txt
     
 FROM python:3.12.0-alpine3.18
 
