@@ -1,11 +1,12 @@
-FROM alpine:3.18 as base
+FROM python:3.12.0-alpine3.18 as base
 
 COPY src/requirements.txt /requirements.txt
 
 RUN apk update && \
     apk add --update --no-cache \
-	    python3 \
-        py3-pip
+	python3 \
+        py3-pip \
+	gcc
     
 RUN mkdir -p /wheels && \
     pip wheel -w /wheels -r requirements.txt
