@@ -20,8 +20,8 @@ RUN pip install pyclean --no-cache-dir && \
     rm -rf /wheels && \
     pyclean -v /usr && \
     pip uninstall -y pyclean && \
-    apk del py3-pip && \
-    rm -rf /var/cache/apk/*
+    rm -rf /var/cache/apk/* && \
+    rm -rf /tmp/*
 
 ENTRYPOINT ["python3", "/opt/canary.py"]
 #CMD ["--help"]
