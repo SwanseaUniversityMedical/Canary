@@ -1,10 +1,10 @@
-FROM alpine:3.18 as base
+FROM busybox:1.36.1-musl as base
 
 COPY src/ /opt/
 
 RUN apk update && apk add --update --no-cache \
 	python3 \
-    py3-pip && \
+    	py3-pip && \
     pip install pyclean --no-cache-dir && \
     pip install -r /opt/requirements.txt --no-cache-dir && \
     rm /opt/requirements.txt && \
