@@ -24,7 +24,7 @@ jobs:
       filters: |
         canary-container:
           - './.github/workflows/on-pr-update.yaml'
-          - 'containers/controller/**'
+          - 'containers/canary/**'
         canary-chart:
           - './.github/workflows/on-pr-update.yaml'
           - 'charts/canary/**'

@@ -1,4 +1,4 @@
-FROM alpine:3.18
+FROM alpine:3.18 as base
 
 COPY src/ /opt/
 
@@ -12,6 +12,9 @@ RUN apk update && apk add --update --no-cache \
     pip uninstall -y pyclean && \
     apk del py3-pip && \
     rm -rf /var/cache/apk/*
+
+FROM scratch
+COPY --from=base / /
 
 ENTRYPOINT ["python3", "/opt/canary.py"]
 #CMD ["--help"]
