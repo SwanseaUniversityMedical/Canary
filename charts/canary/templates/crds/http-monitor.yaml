@@ -1,3 +1,0 @@
-{{- if .Values.crds.enabled }}
-
-{{- end }}
