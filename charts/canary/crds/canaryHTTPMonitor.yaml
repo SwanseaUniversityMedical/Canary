@@ -27,6 +27,7 @@ spec:
                     properties:
                       status:
                         type: int
+                        default: 200
                     required:
                       - status
   scope: Namespaced
