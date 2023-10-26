@@ -25,10 +25,10 @@ spec:
                   items:
                     type: object
                     properties:
-                      expected:
+                      status:
                         type: int
                     required:
-                      - expected
+                      - status
   scope: Namespaced
   names:
     plural: CanaryHTTPMonitors
