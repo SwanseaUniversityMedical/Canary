@@ -1,0 +1,9 @@
+apiVersion: "canary.ukserp.ac.uk/v1"
+kind: CanaryHTTPMonitor
+metadata:
+  name: github
+spec:
+  url: https://api.github.com/octocat
+  interval: 30 #seconds
+  expect:
+    status: 200
