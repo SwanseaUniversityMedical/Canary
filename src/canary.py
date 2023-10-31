@@ -7,8 +7,6 @@ import click
 from kubernetes_asyncio import client, config
 from kubernetes_asyncio.client.api_client import ApiClient
 
-config.load_incluster_config()
-
 
 logging.basicConfig(
     level=logging.DEBUG,
@@ -58,7 +56,7 @@ async def monitor_url(name, url, interval, statuses):
 
 
 async def watch_events(*args, **kwargs):
-    await config.load_kube_config()
+    await config.load_incluster_config()
 
     logging.info("starting watcher")
     logging.debug(args)
