@@ -56,7 +56,7 @@ async def monitor_url(name, url, interval, statuses):
 
 
 async def watch_events(*args, **kwargs):
-    await config.load_incluster_config()
+    config.load_incluster_config()
 
     logging.info("starting watcher")
     logging.debug(args)
