@@ -4,7 +4,7 @@ metadata:
   name: read-http-monitors
 subjects:
 - kind: User
-  name: Marvin # "name" is case sensitive
+  name: canaryhttpmonitor # "name" is case sensitive
   apiGroup: rbac.authorization.k8s.io
 roleRef:
   kind: Role #this must be Role or ClusterRole
