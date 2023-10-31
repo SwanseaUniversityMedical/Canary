@@ -39,82 +39,30 @@ spec:
 
   template:
     metadata:
-
-      annotations:
-        {{- if .Values.canary.podAnnotations }}
-        {{- toYaml .Values.canary.podAnnotations | nindent 8 }}
-        {{- end }}
-        {{- if .Values.controller.podAnnotations }}
-        {{- toYaml .Values.controller.podAnnotations | nindent 8 }}
-        {{- end }}
-
       labels:
         app: {{ include "canary.labels.app" . }}
         component: controller
         release: {{ .Release.Name }}
-        {{- if .Values.controller.podLabels }}
-        {{- toYaml .Values.controller.podLabels | nindent 8 }}
-        {{- end }}
 
     spec:
       restartPolicy: Always
-
-      {{- if .Values.controller.image.pullSecret }}
-      imagePullSecrets:
-        - name: {{ .Values.controller.image.pullSecret }}
-      {{- end }}
-
-      {{- if $podNodeSelector }}
-      nodeSelector:
-        {{- $podNodeSelector | nindent 8 }}
-      {{- end }}
-
-      {{- if $podAffinity }}
-      affinity:
-        {{- $podAffinity | nindent 8 }}
-      {{- end }}
-
-      {{- if $podTolerations }}
-      tolerations:
-        {{- $podTolerations | nindent 8 }}
-      {{- end }}
-
-      {{- if $podSecurityContext }}
-      securityContext:
-        {{- $podSecurityContext | nindent 8 }}
-      {{- end }}
-
-      {{- if $volumes }}
-      volumes:
-        {{- $volumes | indent 8 }}
-      {{- end }}
 
       containers:
         - name: controller
           {{- include "canary.image" (dict "image" .Values.controller.image) | indent 10 }}
 
-          {{- if $volumeMounts }}
           volumeMounts:
-            {{- $volumeMounts | indent 12 }}
-          {{- end }}
-
-          envFrom:
-            {{- if $envFrom }}
-            {{- $envFrom | indent 12 }}
-            {{- end }}
+            - mountPath: /var/run/secrets/tokens
+              name: canaryhttpmonitor
 
           env:
             - name: CANARY_PROMETHEUS_HOSTNAME
               value: "{{ .Values.canary.prometheus.hostname }}"
-
-            {{- if $env }}
-            {{- $env | indent 12 }}
-            {{- end }}
-
-          resources:
-            {{- toYaml .Values.controller.resources | nindent 12 }}
-
-        {{- if $containers }}
-        {{- $containers | nindent 8 }}
-        {{- end }}
+      serviceAccountName: canaryhttpmonitor
+      volumes:
+          - name: canaryhttpmonitor
+            projected:
+              sources:
+                - serviceAccountToken:
+                    path: canaryhttpmonitor
 {{- end }}
