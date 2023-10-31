@@ -57,6 +57,7 @@ async def monitor_url(name, url, interval, statuses):
 
 async def watch_events(*args, **kwargs):
     config.load_incluster_config()
+    print(client.RbacAuthorizationV1Api())
 
     logging.info("starting watcher")
     logging.debug(args)
