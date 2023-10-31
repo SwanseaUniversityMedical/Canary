@@ -24,6 +24,7 @@ jobs:
         canary-container:
           - './.github/workflows/on-release.yaml'
           - 'containers/canary/**'
+          - 'src/**'
         canary-chart:
           - './.github/workflows/on-release.yaml'
           - 'charts/canary/**'
