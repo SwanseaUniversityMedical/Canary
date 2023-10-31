@@ -7,6 +7,8 @@ import click
 from kubernetes_asyncio import client, config
 from kubernetes_asyncio.client.api_client import ApiClient
 
+config.load_incluster_config()
+
 
 logging.basicConfig(
     level=logging.DEBUG,
