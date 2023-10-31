@@ -19,14 +19,14 @@ spec:
                 url:
                   type: string
                 interval:
-                  type: int #seconds
+                  type: integer #seconds
                 expect:
                   type: array
                   items:
                     type: object
                     properties:
                       status:
-                        type: int
+                        type: integer
                         default: 200
                     required:
                       - status
