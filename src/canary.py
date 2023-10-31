@@ -4,6 +4,8 @@ import aiohttp
 import random
 import logging
 import click
+from kubernetes_asyncio import client, config
+from kubernetes_asyncio.client.api_client import ApiClient
 
 
 logging.basicConfig(
@@ -54,6 +56,8 @@ async def monitor_url(name, url, interval, statuses):
 
 
 async def watch_events(*args, **kwargs):
+    await config.load_kube_config()
+
     logging.info("starting watcher")
     logging.debug(args)
     logging.debug(kwargs)
@@ -78,16 +82,21 @@ async def watch_events(*args, **kwargs):
     try:
         # Created monitors for current objects
         # TODO Query kubes for existing CanaryHTTPMonitor objects that are visible and iterate over them
-        for monitor in monitors:
-            # Get monitor (simulated)
-            name = monitor["name"]
-            url = monitor["url"]
-            statuses = monitor["expect"]["status"]
-            interval = monitor["interval"] + random.randint(0, 10)
-            logging.info(f"spawning monitor [{name=}]")
-            tasks[name] = asyncio.create_task(
-                monitor_url(name, url, interval, statuses)
-            )
+        # use the context manager to close http sessions automatically
+        async with ApiClient() as api:
+            crds = client.CustomObjectsApi(api)
+            monitors = await crds.list_cluster_custom_object(group="canary.ukserp.ac.uk", version="v1", plural="canaryhttpmonitors")
+            print(monitors)
+            for monitor in monitors:
+                # Get monitor (simulated)
+                name = monitor["name"]
+                url = monitor["url"]
+                statuses = monitor["expect"]["status"]
+                interval = monitor["interval"] + random.randint(0, 10)
+                logging.info(f"spawning monitor [{name=}]")
+                tasks[name] = asyncio.create_task(
+                    monitor_url(name, url, interval, statuses)
+                )
 
         # Consume events
         # TODO Subscript to kubes event queue for changes to CanaryHTTPMonitor objects that are visible
