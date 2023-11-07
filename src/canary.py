@@ -88,28 +88,28 @@ async def watch_events(*args, **kwargs):
 
         # Consume events
         # TODO Subscript to kubes event queue for changes to CanaryHTTPMonitor objects that are visible
-        while True:
-            # Get event (simulated)
-            await asyncio.sleep(30)
-            monitor = random.choice(monitors)
-            name = monitor["name"]
-            url = monitor["url"]
-            statuses = monitor["expect"]["status"]
-            interval = monitor["interval"] + random.randint(0, 10)
-            event = "UPDATED"
-
-            # Cancel the task if it already exists
-            if name in tasks:
-                logging.info(f"cancelling monitor [{name=}]")
-                tasks[name].cancel()
-                await tasks[name]
-
-            # Create a new task at the desired interval
-            if event in ["ADDED", "UPDATED"]:
-                logging.info(f"spawning monitor [{name=}]")
-                tasks[name] = asyncio.create_task(
-                    monitor_url(name, url, interval, statuses)
-                )
+        # while True:
+        #     # Get event (simulated)
+        #     await asyncio.sleep(30)
+        #     monitor = random.choice(monitors)
+        #     name = monitor["name"]
+        #     url = monitor["url"]
+        #     statuses = monitor["expect"]["status"]
+        #     interval = monitor["interval"] + random.randint(0, 10)
+        #     event = "UPDATED"
+        #
+        #     # Cancel the task if it already exists
+        #     if name in tasks:
+        #         logging.info(f"cancelling monitor [{name=}]")
+        #         tasks[name].cancel()
+        #         await tasks[name]
+        #
+        #     # Create a new task at the desired interval
+        #     if event in ["ADDED", "UPDATED"]:
+        #         logging.info(f"spawning monitor [{name=}]")
+        #         tasks[name] = asyncio.create_task(
+        #             monitor_url(name, url, interval, statuses)
+        #         )
 
     except asyncio.CancelledError:
         logging.info("cancelled watcher")
