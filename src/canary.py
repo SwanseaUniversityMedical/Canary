@@ -92,9 +92,10 @@ async def watch_events(*args, **kwargs):
                 url = monitor["spec"]["url"]
                 interval = monitor["spec"]["interval"]
                 statuses = monitor["spec"]["status"]
-                print(name + " " + url + " " + str(interval) + " " + str(statuses))
-            print(monitors)
-            exit(0)
+                tasks[name] = asyncio.create_task(
+                    monitor_url(name, url, interval, statuses)
+                )
+
             for monitor in monitors:
                 # Get monitor (simulated)
                 name = monitor["name"]
