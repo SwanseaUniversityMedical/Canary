@@ -19,17 +19,10 @@ spec:
                 url:
                   type: string
                 interval:
-                  type: int #seconds
-                expect:
-                  type: array
-                  items:
-                    type: object
-                    properties:
-                      status:
-                        type: int
-                        default: 200
-                    required:
-                      - status
+                  type: integer #seconds
+                status:
+                  type: integer
+                  default: 200
   scope: Cluster
   names:
     plural: canaryhttpmonitors

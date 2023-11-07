@@ -46,3 +46,11 @@ controller:
   extraContainers: []
   extraVolumeMounts: []
   extraVolumes: []
+
+serviceAccount:
+  create: true
+  annotations: {}
+
+service:
+  type: NodePort
+  port: 80

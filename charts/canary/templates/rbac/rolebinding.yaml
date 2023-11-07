@@ -1,0 +1,12 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: canaryhttpmonitor
+subjects:
+- kind: ServiceAccount
+  name: canaryhttpmonitor
+  namespace: {{ .Release.Namespace }}
+roleRef:
+  kind: Role #this must be Role or ClusterRole
+  name: canaryhttpmonitor # this must match the name of the Role or ClusterRole you wish to bind to
+  apiGroup: rbac.authorization.k8s.io

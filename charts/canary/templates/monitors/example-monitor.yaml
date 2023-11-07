@@ -5,5 +5,4 @@ metadata:
 spec:
   url: https://api.github.com/octocat
   interval: 30 #seconds
-  expect:
-    status: 200
+
