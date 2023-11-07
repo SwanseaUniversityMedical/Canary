@@ -92,7 +92,7 @@ async def watch_events(*args, **kwargs):
                 url = monitor["spec"]["url"]
                 interval = monitor["spec"]["interval"]
                 statuses = monitor["spec"]["status"]
-                print(name + " " + url + " " + interval + " " + statuses)
+                print(name + " " + url + " " + str(interval) + " " + str(statuses))
             print(monitors)
             exit(0)
             for monitor in monitors:
