@@ -51,18 +51,10 @@ spec:
         - name: controller
           {{- include "canary.image" (dict "image" .Values.controller.image) | indent 10 }}
 
-          volumeMounts:
-            - mountPath: /var/run/secrets/tokens
-              name: canaryhttpmonitor
 
           env:
             - name: CANARY_PROMETHEUS_HOSTNAME
               value: "{{ .Values.canary.prometheus.hostname }}"
       serviceAccountName: canaryhttpmonitor
-      volumes:
-          - name: canaryhttpmonitor
-            projected:
-              sources:
-                - serviceAccountToken:
-                    path: canaryhttpmonitor
+
 {{- end }}
