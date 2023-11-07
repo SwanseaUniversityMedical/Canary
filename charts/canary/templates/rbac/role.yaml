@@ -2,6 +2,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: "canaryhttpmonitor"
+  namespace: {{ .Release.Namespace }}
 rules:
   - apiGroups: [ "", "canary.ukserp.ac.uk" ]
     resources: [ "canaryhttpmonitors" ]
