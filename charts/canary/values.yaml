@@ -23,8 +23,8 @@ controller:
 
   image:
     repository: harbor.ukserp.ac.uk/canary/canary
-    tag: pr-20
-    pullPolicy: Always
+    tag: 1.2.0
+    pullPolicy: IfNotPresent
     pullSecret: ""
     uid: 1001
     gid: 1001
