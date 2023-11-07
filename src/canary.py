@@ -91,7 +91,8 @@ async def watch_events(*args, **kwargs):
                 name = monitor["metadata"]["name"]
                 url = monitor["spec"]["url"]
                 interval = monitor["spec"]["interval"]
-                statuses = monitor["spec"]["status"]
+                statuses = []
+                statuses.insert(monitor["spec"]["status"])
                 tasks[name] = asyncio.create_task(
                     monitor_url(name, url, interval, statuses)
                 )
