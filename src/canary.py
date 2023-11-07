@@ -61,20 +61,6 @@ async def watch_events(*args, **kwargs):
     logging.info("starting watcher")
     logging.debug(args)
     logging.debug(kwargs)
-    monitors = [
-        {
-            "name": "airflow",
-            "url": "https://airflow.sail-teleport.dk.serp.ac.uk",
-            "interval": 10,
-            "expect": {"status": [200]},
-        },
-        {
-            "name": "rabbitmq",
-            "url": "https://rabbitmq.sail-teleport.dk.serp.ac.uk",
-            "interval": 10,
-            "expect": {"status": [200]},
-        },
-    ]
 
     logging.info("listening for events")
     tasks = dict()
@@ -96,17 +82,6 @@ async def watch_events(*args, **kwargs):
                     statuses.append(monitor["spec"]["status"])
                 else:
                     statuses = monitor["spec"]["status"]
-                tasks[name] = asyncio.create_task(
-                    monitor_url(name, url, interval, statuses)
-                )
-
-            for monitor in monitors:
-                # Get monitor (simulated)
-                name = monitor["name"]
-                url = monitor["url"]
-                statuses = monitor["expect"]["status"]
-                interval = monitor["interval"] + random.randint(0, 10)
-                logging.info(f"spawning monitor [{name=}]")
                 tasks[name] = asyncio.create_task(
                     monitor_url(name, url, interval, statuses)
                 )
