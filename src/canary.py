@@ -85,7 +85,7 @@ async def watch_events(*args, **kwargs):
         # use the context manager to close http sessions automatically
         async with ApiClient() as api:
             crds = client.CustomObjectsApi(api)
-            monitors = await crds.list_cluster_custom_object(group="canary.ukserp.ac.uk", version="v1", plural="canaryhttpmonitors")
+            monitors.append(await crds.list_cluster_custom_object(group="canary.ukserp.ac.uk", version="v1", plural="canaryhttpmonitors"))
             print(monitors)
             for monitor in monitors:
                 # Get monitor (simulated)
