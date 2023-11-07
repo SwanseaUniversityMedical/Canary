@@ -77,7 +77,7 @@ async def watch_events(*args, **kwargs):
                 name = monitor["metadata"]["name"]
                 url = monitor["spec"]["url"]
                 interval = monitor["spec"]["interval"]
-                if(type(monitor["spec"]["status"]) != list):
+                if type(monitor["spec"]["status"]) is not list:
                     statuses = []
                     statuses.append(monitor["spec"]["status"])
                 else:
