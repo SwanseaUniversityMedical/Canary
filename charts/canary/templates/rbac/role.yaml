@@ -1,8 +1,8 @@
 apiVersion: rbac.authorization.k8s.io/v1
-kind: Role
+kind: ClusterRole
 metadata:
   name: "canaryhttpmonitor"
 rules:
-  - apiGroups: [ "" ]
-    resources: [ "pods" ]
-    verbs: [ "get", "watch" ]
+  - apiGroups: [ "", "canary.ukserp.ac.uk" ]
+    resources: [ "canaryhttpmonitors" ]
+    verbs: [ "get", "watch", "list" ]
