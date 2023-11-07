@@ -51,7 +51,6 @@ spec:
         - name: controller
           {{- include "canary.image" (dict "image" .Values.controller.image) | indent 10 }}
 
-
           env:
             - name: CANARY_PROMETHEUS_HOSTNAME
               value: "{{ .Values.canary.prometheus.hostname }}"
