@@ -3,6 +3,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ include "canary.fullname" . }}-controller
+  namespace: {{ .Release.Namespace }}
 
   labels:
     app: {{ include "canary.labels.app" . }}
