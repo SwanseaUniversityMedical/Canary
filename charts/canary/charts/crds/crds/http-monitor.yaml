@@ -23,7 +23,7 @@ spec:
                 status:
                   type: integer
                   default: 200
-  scope: Cluster
+  scope: Namespaced
   names:
     plural: canaryhttpmonitors
     singular: canaryhttpmonitor
