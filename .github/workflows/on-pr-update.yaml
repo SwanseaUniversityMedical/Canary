@@ -23,11 +23,9 @@ jobs:
       slack-channel: ${{ vars.SLACK_CHANNEL }}
       filters: |
         canary-container:
-          - './.github/workflows/on-pr-update.yaml'
           - 'containers/canary/**'
           - 'src/**'
         canary-chart:
-          - './.github/workflows/on-pr-update.yaml'
           - 'charts/canary/**'
 
     secrets:
@@ -69,7 +67,7 @@ jobs:
       slack-channel: ${{ vars.SLACK_CHANNEL }}
       cosign-public-key: ${{ vars.COSIGN_PUBLIC_KEY }}
       test-command: |
-        helm template $CHART --values charts/canary/values.yaml --name canary --namespace canary --create-namespace
+        helm template $CHART --values charts/canary/values.yaml --name-template canary --namespace canary --create-namespace
     secrets:
       cosign-private-key: ${{ secrets.COSIGN_PRIVATE_KEY }}
       cosign-password: ${{ secrets.COSIGN_PASSWORD }}
