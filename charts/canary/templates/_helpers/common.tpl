@@ -6,8 +6,8 @@ EXAMPLE USAGE: {{ include "image" (dict "image" .Values.canary.image) }}
 image: {{ .image.repository }}:{{ .image.tag }}
 imagePullPolicy: {{ .image.pullPolicy }}
 securityContext:
-    runAsUser: {{ .image.uid }}
-    runAsGroup: {{ .image.gid }}
+  runAsUser: {{ .image.uid }}
+  runAsGroup: {{ .image.gid }}
 {{- end }}
 
 {{/*

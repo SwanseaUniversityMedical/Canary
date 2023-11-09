@@ -2,6 +2,7 @@ apiVersion: "canary.ukserp.ac.uk/v1"
 kind: CanaryHTTPMonitor
 metadata:
   name: github
+  namespace: {{ .Release.Namespace }}
 spec:
   url: https://api.github.com/octocat
   interval: 30 #seconds

@@ -1,20 +1,3 @@
-canary:
-
-  prometheus:
-    hostname:
-
-  defaultNodeSelector: {}
-  defaultAffinity: {}
-  defaultTolerations: []
-  defaultSecurityContext:
-    fsGroup: 0
-
-  extraEnv: []
-  extraEnvFrom: []
-  extraContainers: []
-  extraVolumeMounts: []
-  extraVolumes: []
-
 crds:
   enabled: true
 
@@ -28,29 +11,3 @@ controller:
     pullSecret: ""
     uid: 1001
     gid: 1001
-
-  replicas: 1
-
-  resources: {}
-  nodeSelector: {}
-  affinity: {}
-  tolerations: []
-  securityContext: {}
-  labels: {}
-  podLabels: {}
-  annotations: {}
-  podAnnotations: {}
-
-  extraEnv: []
-  extraEnvFrom: []
-  extraContainers: []
-  extraVolumeMounts: []
-  extraVolumes: []
-
-serviceAccount:
-  create: true
-  annotations: {}
-
-service:
-  type: NodePort
-  port: 80
