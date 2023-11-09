@@ -5,6 +5,8 @@ on:
     types:
       - opened
       - synchronize
+    path:
+      - 'src/**.py'
 
 permissions:
   # read on both needed for changes detection
@@ -24,13 +26,6 @@ jobs:
     steps:
       - name: clone repo
         uses: actions/checkout@v4
-        
-      - uses: dorny/paths-filter@v2
-        id: changes
-        with:
-          filters: |
-            src:
-              - 'src/**.py'
         
       - name: install flake8
         if: steps.changes.outputs.src == 'true'
