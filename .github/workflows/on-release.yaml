@@ -69,7 +69,7 @@ jobs:
       chart: charts/canary
       test-command: |
         helm template $CHART \
-          --values charts/canary/values.yaml 
+          --values charts/canary/values.yaml \
           --include-crds \
           --name-template canary \
           --namespace canary \

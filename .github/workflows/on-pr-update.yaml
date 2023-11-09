@@ -68,7 +68,7 @@ jobs:
       cosign-public-key: ${{ vars.COSIGN_PUBLIC_KEY }}
       test-command: |
         helm template $CHART \
-          --values charts/canary/values.yaml 
+          --values charts/canary/values.yaml \
           --include-crds \
           --name-template canary \
           --namespace canary \
