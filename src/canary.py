@@ -88,9 +88,9 @@ async def watch_events(*args, **kwargs):
         # TODO Subscript to kubes event queue for changes to CanaryHTTPMonitor objects that are visible
         watch = kubernetes_asyncio.watch.Watch()
         while True:
-            stream = watch.stream(crds.list_cluster_custom_object,
-                                          "canary.ukserp.ac.uk", "v1", "canaryhttpmonitors")
-            for event in stream:
+
+            for event in watch.stream(crds.list_cluster_custom_object,
+                                          "canary.ukserp.ac.uk", "v1", "canaryhttpmonitors"):
                 name = monitor["metadata"]["name"]
                 url = monitor["spec"]["url"]
                 interval = monitor["spec"]["interval"]
