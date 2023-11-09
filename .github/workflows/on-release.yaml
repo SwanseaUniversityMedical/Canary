@@ -70,7 +70,7 @@ jobs:
       cosign-public-key: ${{ vars.COSIGN_PUBLIC_KEY }}
       chart: charts/canary
       test-command: |
-        helm template $CHART --values charts/canary/values.yaml
+        helm template $CHART --values charts/canary/values.yaml --name canary --namespace canary --create-namespace
     secrets:
       cosign-private-key: ${{ secrets.COSIGN_PRIVATE_KEY }}
       cosign-password: ${{ secrets.COSIGN_PASSWORD }}
