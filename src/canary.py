@@ -80,8 +80,8 @@ async def watch_events(*args, **kwargs):
                     statuses.append(monitor["spec"]["status"])
                 else:
                     statuses = monitor["spec"]["status"]
-                tasks[name] = asyncio.create_task(
-                    monitor_url(name, url, interval, statuses)
+                tasks[name] = asyncio.ensure_future(asyncio.create_task(
+                    monitor_url(name, url, interval, statuses))
                 )
             await asyncio.gather(*tasks)
 
