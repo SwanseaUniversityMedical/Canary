@@ -88,8 +88,11 @@ async def watch_events(*args, **kwargs):
         # TODO Subscript to kubes event queue for changes to CanaryHTTPMonitor objects that are visible
         watch = kubernetes_asyncio.watch.Watch()
 
+        # TODO Get namespace from pod
         namespace = "canary"
+
         while True:
+            logging.info("listening for streamed events")
             async with watch.stream(crds.list_namespaced_custom_object, "canary.ukserp.ac.uk", "v1", namespace, "canaryhttpmonitors") as stream:
                 async for event in stream:
                     print(event)
