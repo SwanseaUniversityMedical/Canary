@@ -89,33 +89,35 @@ async def watch_events(*args, **kwargs):
         watch = kubernetes_asyncio.watch.Watch()
 
         namespace = "canary"
+        while True:
+            async with watch.stream(crds.list_namespaced_custom_object, "canary.ukserp.ac.uk", "v1", namespace, "canaryhttpmonitors") as stream:
+                async for event in stream:
+                    print(event)
+                    rawmonitors = event["items"]
+                    for monitor in rawmonitors:
+                        name = monitor["metadata"]["name"]
+                        url = monitor["spec"]["url"]
+                        interval = monitor["spec"]["interval"]
+                        if type(monitor["spec"]["status"]) is not list:
+                            statuses = []
+                            statuses.append(monitor["spec"]["status"])
+                        else:
+                            statuses = monitor["spec"]["status"]
 
-        async with watch.stream(crds.list_namespaced_custom_object, "canary.ukserp.ac.uk", "v1", namespace, "canaryhttpmonitors") as stream:
-            async for event in stream:
-                print(event)
-                name = monitor["metadata"]["name"]
-                url = monitor["spec"]["url"]
-                interval = monitor["spec"]["interval"]
-                if type(monitor["spec"]["status"]) is not list:
-                    statuses = []
-                    statuses.append(monitor["spec"]["status"])
-                else:
-                    statuses = monitor["spec"]["status"]
+                        # Cancel the task if it already exists or was deleted
+                        if name in tasks or event["type"] == "DELETED":
+                            logging.info(f"cancelling monitor [{name=}]")
+                            watch.stop()
+                            tasks[name].cancel()
+                            await tasks[name]
 
-                # Cancel the task if it already exists or was deleted
-                if name in tasks or event["type"] == "DELETED":
-                    logging.info(f"cancelling monitor [{name=}]")
-                    watch.stop()
-                    tasks[name].cancel()
-                    await tasks[name]
-
-                # Create a new task
-                if event["type"] in ["ADDED", "MODIFIED"]:
-                    logging.info(f"spawning monitor [{name=}]")
-                    tasks[name] = asyncio.create_task(
-                        monitor_url(name, url, interval, statuses)
-                    )
-            await asyncio.gather(*tasks.values())
+                        # Create a new task
+                        if event["type"] in ["ADDED", "MODIFIED"]:
+                            logging.info(f"spawning monitor [{name=}]")
+                            tasks[name] = asyncio.create_task(
+                                monitor_url(name, url, interval, statuses)
+                            )
+                await asyncio.gather(*tasks.values())
 
     except asyncio.CancelledError:
         logging.info("cancelled watcher")
