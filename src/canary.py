@@ -83,6 +83,7 @@ async def watch_events(*args, **kwargs):
                 tasks[name] = asyncio.create_task(
                     monitor_url(name, url, interval, statuses)
                 )
+            await asyncio.gather(*tasks)
 
         # Consume events
         # TODO Subscript to kubes event queue for changes to CanaryHTTPMonitor objects that are visible
@@ -115,6 +116,7 @@ async def watch_events(*args, **kwargs):
                     tasks[name] = asyncio.create_task(
                         monitor_url(name, url, interval, statuses)
                     )
+            await asyncio.gather(*tasks)
 
     except asyncio.CancelledError:
         logging.info("cancelled watcher")
