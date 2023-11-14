@@ -32,7 +32,7 @@ async def monitor_url(name, url, interval, statuses):
                 # Poll the url
                 async with aiohttp.ClientSession() as session:
                     async with session.get(url) as response:
-                        status = response.status()
+                        status = response.status
 
                 # Check if the status code was acceptible
                 healthy = status in statuses
