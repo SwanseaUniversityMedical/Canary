@@ -32,7 +32,7 @@ async def monitor_url(name, url, interval, statuses):
                 # Poll the url
                 async with aiohttp.ClientSession() as session:
                     async with session.get(url) as response:
-                        status = response.status
+                        status = await response.status
 
                 # Check if the status code was acceptible
                 healthy = status in statuses
@@ -96,7 +96,11 @@ async def watch_events(*args, **kwargs):
                 name = monitor["metadata"]["name"]
                 url = monitor["spec"]["url"]
                 interval = monitor["spec"]["interval"]
-                statuses = monitor["spec"]["status"]
+                if type(monitor["spec"]["status"]) is not list:
+                    statuses = []
+                    statuses.append(monitor["spec"]["status"])
+                else:
+                    statuses = monitor["spec"]["status"]
 
                 # Cancel the task if it already exists or was deleted
                 if name in tasks or event["type"] == "DELETED":
