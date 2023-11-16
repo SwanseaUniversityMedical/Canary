@@ -58,9 +58,10 @@ async def monitor_url(name, url, interval, statuses):
 
 
 async def watch_events(*args, **kwargs):
-    conf = Configuration()
-    conf.http_proxy_url = "http://192.168.10.15:8080"
-    await config.load_kube_config(client_configuration=conf)
+    # conf = Configuration()
+    # conf.http_proxy_url = "http://192.168.10.15:8080"
+    # await config.load_kube_config(client_configuration=conf)
+    await config.load_incluster_config()
 
     logging.info("starting watcher")
     logging.debug(args)
@@ -92,12 +93,9 @@ async def watch_events(*args, **kwargs):
         # TODO Subscript to kubes event queue for changes to CanaryHTTPMonitor objects that are visible
         watch = kubernetes_asyncio.watch.Watch()
 
-        # TODO Get namespace from pod
-        namespace = "canary"
-
         while True:
             logging.info("listening for streamed events")
-            async with watch.stream(crds.list_namespaced_custom_object, group="canary.ukserp.ac.uk", version="v1", namespace=namespace, plural="canaryhttpmonitors") as stream:
+            async with watch.stream(crds.list_cluster_custom_object, group="canary.ukserp.ac.uk", version="v1", plural="canaryhttpmonitors") as stream:
                 async for event in stream:
                     print(event)
                     rawmonitors = event["items"]
