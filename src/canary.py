@@ -1,4 +1,5 @@
 import asyncio
+
 import aiohttp
 
 import logging
@@ -6,6 +7,7 @@ import click
 import kubernetes_asyncio.watch
 from kubernetes_asyncio import client, config
 from kubernetes_asyncio.client.api_client import ApiClient
+from kubernetes_asyncio.client import Configuration
 
 
 logging.basicConfig(
@@ -56,7 +58,9 @@ async def monitor_url(name, url, interval, statuses):
 
 
 async def watch_events(*args, **kwargs):
-    config.load_incluster_config()
+    conf = Configuration()
+    conf.http_proxy_url = "http://192.168.10.15:8080"
+    await config.load_kube_config(client_configuration=conf)
 
     logging.info("starting watcher")
     logging.debug(args)
@@ -93,7 +97,7 @@ async def watch_events(*args, **kwargs):
 
         while True:
             logging.info("listening for streamed events")
-            async with watch.stream(crds.list_namespaced_custom_object, "canary.ukserp.ac.uk", "v1", namespace, "canaryhttpmonitors") as stream:
+            async with watch.stream(crds.list_namespaced_custom_object, group="canary.ukserp.ac.uk", version="v1", namespace=namespace, plural="canaryhttpmonitors") as stream:
                 async for event in stream:
                     print(event)
                     rawmonitors = event["items"]
