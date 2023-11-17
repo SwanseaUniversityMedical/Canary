@@ -102,6 +102,7 @@ async def watch_events(*args, **kwargs):
                             logging.info(f'{event=}')
                             rawmonitors = event["object"]
                             for monitor in rawmonitors:
+                                metadata = monitor["metadata"]
                                 name = monitor["metadata"]["name"]
                                 url = monitor["spec"]["url"]
                                 interval = monitor["spec"]["interval"]
