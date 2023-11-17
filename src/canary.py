@@ -61,7 +61,7 @@ async def watch_events(*args, **kwargs):
     # conf = Configuration()
     # conf.http_proxy_url = "http://192.168.10.15:8080"
     # await config.load_kube_config(client_configuration=conf)
-    await config.load_incluster_config()
+    config.load_incluster_config()
 
     logging.info("starting watcher")
     logging.debug(args)
