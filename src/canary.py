@@ -30,23 +30,23 @@ async def monitor_url(name, url, interval, statuses):
             # Spawn a task to track the minimum amount of time to the next iteration and return immediately
             interval_task = asyncio.create_task(asyncio.sleep(interval))
 
-            # try:
-            #     # Poll the url
-            #     async with aiohttp.ClientSession() as session:
-            #         async with session.get(url) as response:
-            #             status = response.status
-            #
-            #     # Check if the status code was acceptible
-            #     healthy = status in statuses
-            #     logging.info(
-            #         f"polled [{name=}] [{interval=}] [{url=}] [{status=}] [{healthy=}]"
-            #     )
-            #
-            #     # Write to Prometheus
-            #     # TODO export metrics to prometheus
-            #
-            # except Exception as ex:
-            #     logging.exception(f"poll error [{name=}]", exc_info=ex)
+            try:
+                # Poll the url
+                async with aiohttp.ClientSession() as session:
+                    async with session.get(url) as response:
+                        status = response.status
+
+                # Check if the status code was acceptible
+                healthy = status in statuses
+                logging.info(
+                    f"polled [{name=}] [{interval=}] [{url=}] [{status=}] [{healthy=}]"
+                )
+
+                # Write to Prometheus
+                # TODO export metrics to prometheus
+
+            except Exception as ex:
+                logging.exception(f"poll error [{name=}]", exc_info=ex)
 
             # Await the minimum interval, returns immediately if it's already passed
             await interval_task
@@ -100,7 +100,7 @@ async def watch_events(*args, **kwargs):
                     async with watch.stream(crds.list_cluster_custom_object, group="canary.ukserp.ac.uk", version="v1", plural="canaryhttpmonitors") as stream:
                         async for event in stream:
                             logging.info(f'{event=}')
-                            rawmonitors = event["items"]
+                            rawmonitors = event["object"]
                             for monitor in rawmonitors:
                                 name = monitor["metadata"]["name"]
                                 url = monitor["spec"]["url"]
