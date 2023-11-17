@@ -101,7 +101,7 @@ async def watch_events(*args, **kwargs):
                     async with watch.stream(crds.list_cluster_custom_object, group="canary.ukserp.ac.uk", version="v1", plural="canaryhttpmonitors") as stream:
                         async for event in stream:
                             logging.info(f'{event=}')
-                            rawmonitors = json.loads(event)
+                            rawmonitors = event
                             for monitor in rawmonitors:
                                 name = monitor["object"]["metadata"]["name"]
                                 url = monitor["object"]["spec"]["url"]
