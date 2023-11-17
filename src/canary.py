@@ -1,4 +1,5 @@
 import asyncio
+import json
 
 import aiohttp
 
@@ -100,17 +101,16 @@ async def watch_events(*args, **kwargs):
                     async with watch.stream(crds.list_cluster_custom_object, group="canary.ukserp.ac.uk", version="v1", plural="canaryhttpmonitors") as stream:
                         async for event in stream:
                             logging.info(f'{event=}')
-                            rawmonitors = event["object"]
+                            rawmonitors = json.loads(event)
                             for monitor in rawmonitors:
-                                metadata = monitor["metadata"]
-                                name = monitor["metadata"]["name"]
-                                url = monitor["spec"]["url"]
-                                interval = monitor["spec"]["interval"]
-                                if type(monitor["spec"]["status"]) is not list:
+                                name = monitor["object"]["metadata"]["name"]
+                                url = monitor["object"]["spec"]["url"]
+                                interval = monitor["object"]["spec"]["interval"]
+                                if type(monitor["object"]["spec"]["status"]) is not list:
                                     statuses = []
-                                    statuses.append(monitor["spec"]["status"])
+                                    statuses.append(monitor["object"]["spec"]["status"])
                                 else:
-                                    statuses = monitor["spec"]["status"]
+                                    statuses = monitor["object"]["spec"]["status"]
 
                                 # Cancel the task if it already exists or was deleted
                                 if name in tasks or event["type"] == "DELETED":
