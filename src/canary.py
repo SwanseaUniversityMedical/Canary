@@ -101,30 +101,30 @@ async def watch_events(*args, **kwargs):
                     async with watch.stream(crds.list_cluster_custom_object, group="canary.ukserp.ac.uk", version="v1", plural="canaryhttpmonitors") as stream:
                         async for event in stream:
                             logging.info(f'{event=}')
-                            monitorMetadata = event["object"]["metadata"]
-                            monitorSpec = event["object"]["spec"]
-                            name = monitorMetadata["name"]
-                            url = monitorSpec["url"]
-                            interval = monitorSpec["interval"]
-                            if type(monitorSpec["status"]) is not list:
-                                statuses = []
-                                statuses.append(monitorSpec["status"])
-                            else:
-                                statuses = monitorSpec["status"]
-
-                            # Cancel the task if it already exists or was deleted
-                            if name in tasks or event["type"] == "DELETED":
-                                logging.info(f"cancelling monitor [{name=}]")
-                                watch.stop()
-                                tasks[name].cancel()
-                                await tasks[name]
-
-                            # Create a new task
-                            if event["type"] in ["ADDED", "MODIFIED"]:
-                                logging.info(f"spawning monitor [{name=}]")
-                                tasks[name] = asyncio.create_task(
-                                    monitor_url(name, url, interval, statuses)
-                                )
+                            # monitorMetadata = event["object"]["metadata"]
+                            # monitorSpec = event["object"]["spec"]
+                            # name = monitorMetadata["name"]
+                            # url = monitorSpec["url"]
+                            # interval = monitorSpec["interval"]
+                            # if type(monitorSpec["status"]) is not list:
+                            #     statuses = []
+                            #     statuses.append(monitorSpec["status"])
+                            # else:
+                            #     statuses = monitorSpec["status"]
+                            #
+                            # # Cancel the task if it already exists or was deleted
+                            # if name in tasks or event["type"] == "DELETED":
+                            #     logging.info(f"cancelling monitor [{name=}]")
+                            #     watch.stop()
+                            #     tasks[name].cancel()
+                            #     await tasks[name]
+                            #
+                            # # Create a new task
+                            # if event["type"] in ["ADDED", "MODIFIED"]:
+                            #     logging.info(f"spawning monitor [{name=}]")
+                            #     tasks[name] = asyncio.create_task(
+                            #         monitor_url(name, url, interval, statuses)
+                            #     )
             except RuntimeError as ex:
                 logging.exception("Stream runtime error:", exc_info=ex)
                 pass
