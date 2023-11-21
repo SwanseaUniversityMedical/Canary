@@ -69,6 +69,7 @@ async def watch_events(*args, **kwargs):
 
     logging.info("listening for events")
     tasks = dict()
+    runningTasks = dict()
 
     try:
         while True:
@@ -91,24 +92,29 @@ async def watch_events(*args, **kwargs):
                         statuses = monitor["spec"]["status"]
 
                     if name in tasks and (
-                            tasks[name]['url'] != url or tasks[name]['interval'] != interval or tasks[name][
+                            runningTasks[name]['url'] != url or runningTasks[name]['interval'] != interval or runningTasks[name][
                         'statuses'] != statuses):
                         logging.info(f"cancelling monitor [{name=}]")
                         tasks[name].cancel()
+                        runningTasks[name].popitem()
                         await tasks[name]
                         logging.info(f"spawning monitor [{name=}]")
+                        runningTasks[name] = {'name': name, 'url': url, 'interval': interval, 'statuses': statuses}
                         tasks[name] = asyncio.create_task(
                             monitor_url(name, url, interval, statuses))
 
                     if name not in tasks:
                         logging.info(f"spawning monitor [{name=}]")
+                        runningTasks[name] = {'name': name, 'url': url, 'interval': interval, 'statuses': statuses}
                         tasks[name] = asyncio.create_task(
                             monitor_url(name, url, interval, statuses))
+
                 if len(rawmonitors) < len(tasks):
-                    for task in tasks:
+                    for task in runningTasks:
                         if task['name'] not in monitor_names:
                             logging.info(f"cancelling monitor [{name=}]")
                             tasks[task['name']].cancel()
+                            runningTasks[task['name']].popitem()
             await asyncio.sleep(30)
 
     except asyncio.CancelledError:
