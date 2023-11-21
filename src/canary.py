@@ -104,8 +104,11 @@ async def watch_events(*args, **kwargs):
                             monitorMetadata = event["object"]["metadata"]
                             monitorSpec = event["object"]["spec"]
                             name = monitorMetadata["name"]
+                            logging.info(f'{name=}')
                             url = monitorSpec["url"]
+                            logging.info(f'{url=}')
                             interval = monitorSpec["interval"]
+                            logging.info(f'{interval=}')
                             if type(monitorSpec["status"]) is not list:
                                 statuses = []
                                 statuses.append(monitorSpec["status"])
