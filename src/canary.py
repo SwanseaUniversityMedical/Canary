@@ -116,14 +116,14 @@ async def watch_events(*args, **kwargs):
                                 break
                             else:
                                 # Cancel the task if it already exists or was deleted
-                                if name in tasks or event["type"] == "DELETED":
+                                if name in tasks and event["type"] in ["DELETED", "MODIFIED"]:
                                     logging.info(f"cancelling monitor [{name=}]")
                                     watch.stop()
                                     tasks[name].cancel()
                                     await tasks[name]
 
                                 # Create a new task
-                                if event["type"] in ["ADDED", "MODIFIED"]:
+                                if event["type"] in ["ADDED", "MODIFIED"] and name not in tasks:
                                     logging.info(f"spawning monitor [{name=}]")
                                     tasks[name] = asyncio.create_task(
                                         monitor_url(name, url, interval, statuses)
