@@ -117,7 +117,7 @@ async def watch_events(*args, **kwargs):
                                 break
                             else:
                                 # Cancel the task if it already exists or was deleted
-                                if name in tasks and event["type"] in ["DELETED", "MODIFIED"]:
+                                if name in tasks or event["type"] in ["DELETED", "MODIFIED"]:
                                     logging.info(f"cancelling monitor [{name=}]")
                                     watch.stop()
                                     tasks[name].cancel()
