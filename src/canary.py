@@ -116,11 +116,11 @@ async def watch_events(*args, **kwargs):
                                 statuses = monitorSpec["status"]
 
                             if name in tasks and event["type"] == ["ADDED"]:
-                                logging.info("Discarding first ADDED events")
+                                logging.info("Discarding ADDED event for existing task")
                                 break
                             else:
                                 # Cancel the task if it already exists or was deleted
-                                if name in tasks or event["type"] in ["DELETED", "MODIFIED"]:
+                                if name in tasks and event["type"] in ["DELETED", "MODIFIED"]:
                                     logging.info(f"cancelling monitor [{name=}]")
                                     watch.stop()
                                     tasks[name].cancel()
