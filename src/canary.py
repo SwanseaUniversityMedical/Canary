@@ -124,7 +124,7 @@ async def watch_events(*args, **kwargs):
                                     # await tasks[name]
 
                                 # Create a new task
-                                if event["type"] in ["ADDED", "MODIFIED"] and name not in tasks:
+                                if event["type"] in ["ADDED", "MODIFIED"]:
                                     logging.info(f"spawning monitor [{name=}]")
                                     tasks[name] = asyncio.create_task(
                                         monitor_url(name, url, interval, statuses)
