@@ -10,7 +10,6 @@ from kubernetes_asyncio import client, config
 from kubernetes_asyncio.client.api_client import ApiClient
 from kubernetes_asyncio.client import Configuration
 
-
 logging.basicConfig(
     level=logging.DEBUG,
     format="[%(asctime)s %(filename)s:%(lineno)s %(funcName)s] %(message)s",
@@ -72,68 +71,45 @@ async def watch_events(*args, **kwargs):
     tasks = dict()
 
     try:
-        # Create monitors for current objects
-        async with ApiClient() as api:
-            crds = client.CustomObjectsApi(api)
-            rawmonitors = await crds.list_cluster_custom_object(group="canary.ukserp.ac.uk", version="v1", plural="canaryhttpmonitors")
-            rawmonitors = rawmonitors["items"]
-            for monitor in rawmonitors:
-                name = monitor["metadata"]["name"]
-                url = monitor["spec"]["url"]
-                interval = monitor["spec"]["interval"]
-                if type(monitor["spec"]["status"]) is not list:
-                    statuses = []
-                    statuses.append(monitor["spec"]["status"])
-                else:
-                    statuses = monitor["spec"]["status"]
-                tasks[name] = asyncio.create_task(
-                    monitor_url(name, url, interval, statuses))
-
-        # Consume events
-        # TODO Subscript to kubes event queue for changes to CanaryHTTPMonitor objects that are visible
-        watch = kubernetes_asyncio.watch.Watch()
-
         while True:
-            logging.info("listening for streamed events")
-            try:
-                async with ApiClient() as api:
-                    crds = client.CustomObjectsApi(api)
-                    async with watch.stream(crds.list_cluster_custom_object, group="canary.ukserp.ac.uk", version="v1", plural="canaryhttpmonitors") as stream:
-                        async for event in stream:
-                            logging.info(f'{event=}')
-                            monitorMetadata = event["object"]["metadata"]
-                            monitorSpec = event["object"]["spec"]
-                            name = monitorMetadata["name"]
-                            logging.info(f'{name=}')
-                            url = monitorSpec["url"]
-                            logging.info(f'{url=}')
-                            interval = monitorSpec["interval"]
-                            logging.info(f'{interval=}')
-                            if type(monitorSpec["status"]) is not list:
-                                statuses = []
-                                statuses.append(monitorSpec["status"])
-                            else:
-                                statuses = monitorSpec["status"]
+            logging.info("checking for updates on the cluster")
+            async with ApiClient() as api:
+                crds = client.CustomObjectsApi(api)
+                rawmonitors = await crds.list_cluster_custom_object(group="canary.ukserp.ac.uk", version="v1",
+                                                                    plural="canaryhttpmonitors")
+                rawmonitors = rawmonitors["items"]
+                monitor_names = []
+                for monitor in rawmonitors:
+                    name = monitor["metadata"]["name"]
+                    monitor_names.append(name)
+                    url = monitor["spec"]["url"]
+                    interval = monitor["spec"]["interval"]
+                    if type(monitor["spec"]["status"]) is not list:
+                        statuses = []
+                        statuses.append(monitor["spec"]["status"])
+                    else:
+                        statuses = monitor["spec"]["status"]
 
-                            # Cancel the task if it already exists or was deleted
-                            if name in tasks and event["type"] in ["DELETED", "MODIFIED"]:
-                                logging.info(f"cancelling monitor [{name=}]")
-                                watch.stop()
-                                tasks[name].cancel()
-                                # await tasks[name]
+                    if name in tasks and (
+                            tasks[name]['url'] != url or tasks[name]['interval'] != interval or tasks[name][
+                        'statuses'] != statuses):
+                        logging.info(f"cancelling monitor [{name=}]")
+                        tasks[name].cancel()
+                        await tasks[name]
+                        logging.info(f"spawning monitor [{name=}]")
+                        tasks[name] = asyncio.create_task(
+                            monitor_url(name, url, interval, statuses))
 
-                            if name in tasks and event["type"] == ["ADDED"]:
-                                logging.info("Ignoring ADDED event for existing task")
-                            else:
-                                # Create a new task
-                                if event["type"] in ["ADDED", "MODIFIED"]:
-                                    logging.info(f"spawning monitor [{name=}]")
-                                    tasks[name] = asyncio.create_task(
-                                        monitor_url(name, url, interval, statuses)
-                                    )
-            except RuntimeError as ex:
-                logging.exception("Stream runtime error:", exc_info=ex)
-                pass
+                    if name not in tasks:
+                        logging.info(f"spawning monitor [{name=}]")
+                        tasks[name] = asyncio.create_task(
+                            monitor_url(name, url, interval, statuses))
+                if len(rawmonitors) < len(tasks):
+                    for task in tasks:
+                        if task['name'] not in monitor_names:
+                            logging.info(f"cancelling monitor [{name=}]")
+                            tasks[task['name']].cancel()
+            await asyncio.sleep(30)
 
     except asyncio.CancelledError:
         logging.info("cancelled watcher")
