@@ -1,14 +1,11 @@
-import asyncio
-import json
-
-import aiohttp
-
 import logging
 import click
-import kubernetes_asyncio.watch
-from kubernetes_asyncio import client, config
-from kubernetes_asyncio.client.api_client import ApiClient
-from kubernetes_asyncio.client import Configuration
+
+from urllib.parse import urljoin, urlencode, urlparse, urlunparse
+
+import asyncio
+import aiohttp
+import kubernetes_asyncio as k8s
 
 logging.basicConfig(
     level=logging.DEBUG,
@@ -16,121 +13,149 @@ logging.basicConfig(
 )
 
 
-async def monitor_url(name, url, interval, statuses):
+async def push_metric(url, job, metric):
+    # http://prometheus-pushgateway.hiru-mgmt-monitoring.svc.cluster.local:9091
+    put_url = urljoin(url, f"/metrics/job/{job}")
+
+    async with aiohttp.ClientSession() as session:
+        async with session.put(put_url, data=metric) as response:
+            assert response.status == 200
+
+
+async def monitor_url(name, spec):
     """
     Monitors a given url at a regular interval and logs the result to prometheus.
     This co-routine loops forever unless it is externally cancelled, such as to recreate it with new settings.
     """
 
-    logging.info(f"starting [{name=}]")
+    header = f"monitor | [name={name}] [interval={spec['interval']}] [url={spec['url']}]"
     try:
         while True:
-            logging.debug(f"polling [{name=}] [{interval=}] [{url=}]")
-
             # Spawn a task to track the minimum amount of time to the next iteration and return immediately
-            interval_task = asyncio.create_task(asyncio.sleep(interval))
+            interval_task = asyncio.create_task(asyncio.sleep(spec["interval"]))
 
             try:
                 # Poll the url
                 async with aiohttp.ClientSession() as session:
-                    async with session.get(url) as response:
+                    async with session.get(spec["url"]) as response:
                         status = response.status
 
                 # Check if the status code was acceptible
-                healthy = status in statuses
-                logging.info(
-                    f"polled [{name=}] [{interval=}] [{url=}] [{status=}] [{healthy=}]"
-                )
+                healthy = status == spec["status"]
+
+                logging.info(f"{header} | poll [{status=}] [{healthy=}]")
 
                 # Write to Prometheus
                 # TODO export metrics to prometheus
 
             except Exception as ex:
-                logging.exception(f"poll error [{name=}]", exc_info=ex)
+                logging.exception(f"{header} | ERROR", exc_info=ex)
+
+                # Write to Prometheus
+                # TODO export metrics to prometheus
 
             # Await the minimum interval, returns immediately if it's already passed
             await interval_task
 
     except asyncio.CancelledError:
-        logging.info(f"cancelled [{name=}]")
+        logging.info(f"{header} | cancelled")
     finally:
-        logging.info(f"halting [{name=}]")
+        logging.info(f"{header} | halting")
 
 
-async def watch_events(*args, **kwargs):
-    # conf = Configuration()
-    # conf.http_proxy_url = "http://192.168.10.15:8080"
-    # await config.load_kube_config(client_configuration=conf)
-    config.load_incluster_config()
+async def controller(*args, **kwargs):
 
-    logging.info("starting watcher")
-    logging.debug(args)
-    logging.debug(kwargs)
+    logging.info("controller | starting")
+    logging.debug(f"controller | {args=}")
+    logging.debug(f"controller | {kwargs=}")
 
-    logging.info("listening for events")
-    tasks = dict()
-    runningTasks = dict()
+    update_interval = kwargs["update-interval"]
+
+    logging.info("controller | loading kube api config")
+    k8s.config.load_incluster_config()
+
+    monitors = dict()
 
     try:
         while True:
-            logging.info("checking for updates on the cluster")
-            async with ApiClient() as api:
-                crds = client.CustomObjectsApi(api)
-                rawmonitors = await crds.list_cluster_custom_object(group="canary.ukserp.ac.uk", version="v1",
-                                                                    plural="canaryhttpmonitors")
-                rawmonitors = rawmonitors["items"]
-                monitor_names = []
-                for monitor in rawmonitors:
-                    name = monitor["metadata"]["name"]
-                    monitor_names.append(name)
-                    url = monitor["spec"]["url"]
-                    interval = monitor["spec"]["interval"]
-                    if type(monitor["spec"]["status"]) is not list:
-                        statuses = []
-                        statuses.append(monitor["spec"]["status"])
-                    else:
-                        statuses = monitor["spec"]["status"]
 
-                    if name in tasks and (
-                            runningTasks[name]['url'] != url or runningTasks[name]['interval'] != interval or runningTasks[name][
-                        'statuses'] != statuses):
-                        logging.info(f"cancelling monitor [{name=}]")
-                        tasks[name].cancel()
-                        runningTasks[name].popitem()
-                        await tasks[name]
-                        logging.info(f"spawning monitor [{name=}]")
-                        runningTasks[name] = {'name': name, 'url': url, 'interval': interval, 'statuses': statuses}
-                        tasks[name] = asyncio.create_task(
-                            monitor_url(name, url, interval, statuses))
+            logging.info("controller | querying kube api for monitors")
+            async with k8s.client.CustomObjectsApi() as api:
 
-                    if name not in tasks:
-                        logging.info(f"spawning monitor [{name=}]")
-                        runningTasks[name] = {'name': name, 'url': url, 'interval': interval, 'statuses': statuses}
-                        tasks[name] = asyncio.create_task(
-                            monitor_url(name, url, interval, statuses))
+                manifests = await api.list_cluster_custom_object(
+                    group="canary.ukserp.ac.uk",
+                    version="v1",
+                    plural="canaryhttpmonitors"
+                )
 
-                if len(rawmonitors) < len(tasks):
-                    for task in runningTasks:
-                        if task['name'] not in monitor_names:
-                            logging.info(f"cancelling monitor [{name=}]")
-                            tasks[task['name']].cancel()
-                            runningTasks[task['name']].popitem()
-            await asyncio.sleep(30)
+                # Convert the manifests into a dict keyed on namespace.name
+                manifests = {
+                    f"{manifest['metadata']['namespace']}."
+                    f"{manifest['metadata']['name']}": manifest
+                    for manifest in manifests["items"]
+                }
+
+                logging.debug(f"controller | [manifests={len(manifests)}]")
+
+                # Cancel existing monitors that are not found in the live manifests
+                for name, monitor in monitors.items():
+
+                    if name not in manifests:
+                        logging.info(f"controller | canceling monitor [{name=}]")
+                        monitors[name]["task"].cancel()
+                        # Don't care about waiting for this
+                        #await monitors[name]["task"]
+                        monitors.pop(name)
+
+                # Create or re-create monitors to match the live manifests
+                for name, manifest in manifests.items():
+
+                    if (name in monitors) and (monitors[name]["spec"] != manifest["spec"]):
+                        logging.info(f"controller | recreating monitor [{name=}]")
+                        monitors[name]["task"].cancel()
+                        await monitors[name]["task"]
+                        monitors.pop(name)
+
+                    if name not in monitors:
+                        logging.info(f"controller | spawning monitor [{name=}]")
+                        monitors[name] = dict(
+                            name=name,
+                            spec=manifest["spec"],
+                            task=asyncio.create_task(
+                                monitor_url(name=name, spec=manifest["spec"])
+                            )
+                        )
+
+            # Pause before polling the kube api again
+            await asyncio.sleep(update_interval)
 
     except asyncio.CancelledError:
-        logging.info("cancelled watcher")
-        for task in tasks.values():
-            task.cancel()
+        logging.info("controller | cancelled")
 
-        await asyncio.gather(*tasks.values())
     finally:
-        logging.info("halting watcher")
+        logging.info("controller | halting")
+
+        for name, monitor in monitors.items():
+            logging.info(f"controller | canceling monitor [{name=}]")
+            monitor["task"].cancel()
+
+        await asyncio.gather(*map(lambda m: m["task"], monitors.values()))
 
 
 @click.command()
+@click.option(
+    "-u",
+    "--update-interval",
+    type=click.IntRange(min=5, max_open=True),
+    default=30,
+    help="Update interval (seconds) for querying kubernetes api for monitor manifests.",
+    show_default=True
+)
 def main(*args, **kwargs):
-    asyncio.run(watch_events(*args, **kwargs))
+    logging.info(f"canary | spawning controller")
+    asyncio.run(controller(*args, **kwargs))
+    logging.info(f"canary | halting")
 
 
 if __name__ == "__main__":
-    main()
+    main(auto_envvar_prefix='CANARY')
