@@ -1,7 +1,7 @@
 import logging
 import click
 
-from urllib.parse import urljoin, urlencode, urlparse, urlunparse
+from urllib.parse import urljoin
 
 import asyncio
 import aiohttp
@@ -104,7 +104,7 @@ async def controller(*args, **kwargs):
                         logging.info(f"controller | canceling monitor [{name=}]")
                         monitors[name]["task"].cancel()
                         # Don't care about waiting for this
-                        #await monitors[name]["task"]
+                        # await monitors[name]["task"]
                         monitors.pop(name)
 
                 # Create or re-create monitors to match the live manifests
@@ -152,9 +152,9 @@ async def controller(*args, **kwargs):
     show_default=True
 )
 def main(*args, **kwargs):
-    logging.info(f"canary | spawning controller")
+    logging.info("canary | spawning controller")
     asyncio.run(controller(*args, **kwargs))
-    logging.info(f"canary | halting")
+    logging.info("canary | halting")
 
 
 if __name__ == "__main__":
