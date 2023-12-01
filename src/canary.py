@@ -80,9 +80,9 @@ async def controller(*args, **kwargs):
         while True:
 
             logging.info("query kube api for monitors")
-            async with k8s.client.CustomObjectsApi() as api:
-
-                manifests = await api.list_cluster_custom_object(
+            async with k8s.client.ApiClient() as api:
+                crds = k8s.client.CustomObjectsApi(api)
+                manifests = await crds.list_cluster_custom_object(
                     group="canary.ukserp.ac.uk",
                     version="v1",
                     plural="canaryhttpmonitors"
