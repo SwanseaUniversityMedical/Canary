@@ -11,3 +11,6 @@ controller:
     pullSecret: ""
     uid: 1001
     gid: 1001
+
+  extraEnv: []
+  extraEnvFrom: []
