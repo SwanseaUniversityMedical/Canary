@@ -14,7 +14,7 @@ logging.basicConfig(
 
 
 async def push_metric(url, job, metric):
-    # http://prometheus-pushgateway.hiru-mgmt-monitoring.svc.cluster.local:9091
+    # http://prometheus-pushgateway.hiru-mgmt-monitoring.svc.cluster.local:9091 .
     put_url = urljoin(url, f"/metrics/job/{job}")
 
     async with aiohttp.ClientSession() as session:
