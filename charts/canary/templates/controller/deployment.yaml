@@ -38,8 +38,8 @@ spec:
           {{- include "canary.image" (dict "image" .Values.controller.image) | indent 10 }}
 
           envFrom:
-            {{ toYaml .Values.controller.extraEnvFrom | indent 12 }}
+            {{- include "canary.envFrom" (dict "Release" .Release "Values" .Values "extraEnv" .Values.controller.extraEnvFrom) | indent 12 }}
           env:
-            {{ toYaml .Values.controller.extraEnv | indent 12 }}
+            {{- include "canary.env" (dict "Release" .Release "Values" .Values "extraEnv" .Values.controller.extraEnv) | indent 12 }}
 
 {{- end }}

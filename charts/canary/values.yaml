@@ -1,6 +1,11 @@
 crds:
   enabled: true
 
+canary:
+
+  extraEnv: []
+  extraEnvFrom: []
+
 controller:
   enabled: true
 
