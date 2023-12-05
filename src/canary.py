@@ -57,7 +57,7 @@ async def monitor_url(name, url, interval, statuses):
         logging.info(f"halting [{name=}]")
 
 
-async def watch_events(interval, *args, **kwargs):
+async def watch_events(poll_rate = 30, *args, **kwargs):
     # conf = Configuration()
     # conf.http_proxy_url = "http://192.168.10.15:8080"
     # await config.load_kube_config(client_configuration=conf)
@@ -115,7 +115,7 @@ async def watch_events(interval, *args, **kwargs):
                             logging.info(f"cancelling monitor [{name=}]")
                             tasks[task['name']].cancel()
                             runningTasks[task['name']].popitem()
-            await asyncio.sleep(interval)
+            await asyncio.sleep(poll_rate)
 
     except asyncio.CancelledError:
         logging.info("cancelled watcher")
