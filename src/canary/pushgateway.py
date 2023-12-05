@@ -9,15 +9,15 @@ def format_metrics(timestamp: float, metrics: dict, labels: dict):
         label, value = kv
         return f"{label}=\"{value}\""
 
-    timestamp = f"{int(float(timestamp) * 1000):d}"
-    labels |= dict(timestamp=timestamp)
+    # timestamp = f"{int(float(timestamp) * 1000):d}"
+    # labels |= dict(timestamp=timestamp)
     labels_str = ", ".join(map(format_label, labels.items()))
 
     def format_metric(kv):
         metric, value = kv
         return f"""
         # TYPE canary_{metric} gauge
-        canary_{metric}{{{labels_str}}} {value} {timestamp}
+        canary_{metric}{{{labels_str}}} {value}
         """.strip()
 
     return "\n".join(map(format_metric, metrics.items()))
