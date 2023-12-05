@@ -21,7 +21,7 @@ async def Monitor(name: str, spec: dict, labels: dict):
 
     # Allow this to throw an exception if the url is invalid
     url = spec["url"]
-    urllib.parse.urlparse(url)
+    #urllib.parse.urlparse(url)
 
     # TODO handle this as a list of valid statuses
     expected_status = str(spec["status"])
