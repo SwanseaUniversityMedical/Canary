@@ -25,7 +25,7 @@ async def Controller(*args, **kwargs):
     monitors = dict()
 
     try:
-        await start_http_server()
+        await start_http_server(port=8080)
 
         while True:
 
