@@ -57,7 +57,7 @@ async def monitor_url(name, url, interval, statuses):
         logging.info(f"halting [{name=}]")
 
 
-async def watch_events(*args, **kwargs):
+async def watch_events(interval, *args, **kwargs):
     # conf = Configuration()
     # conf.http_proxy_url = "http://192.168.10.15:8080"
     # await config.load_kube_config(client_configuration=conf)
@@ -115,7 +115,7 @@ async def watch_events(*args, **kwargs):
                             logging.info(f"cancelling monitor [{name=}]")
                             tasks[task['name']].cancel()
                             runningTasks[task['name']].popitem()
-            await asyncio.sleep(30)
+            await asyncio.sleep(interval)
 
     except asyncio.CancelledError:
         logging.info("cancelled watcher")
@@ -128,9 +128,12 @@ async def watch_events(*args, **kwargs):
 
 
 @click.command()
-def main(*args, **kwargs):
-    asyncio.run(watch_events(*args, **kwargs))
+
+@click.option('--interval')
+
+def main(interval, *args, **kwargs):
+    asyncio.run(watch_events(interval, *args, **kwargs))
 
 
 if __name__ == "__main__":
-    main()
+    main(auto_envvar_prefix='CANARY')
