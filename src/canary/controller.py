@@ -11,7 +11,7 @@ async def Controller(*args, **kwargs):
     logging.debug(f"controller | {args=}")
     logging.debug(f"controller | {kwargs=}")
 
-    update_interval = kwargs["update_interval"]
+    update_interval = kwargs["k8s_update_interval"]
     pushgateway = dict(
         url=kwargs["metric_url"],
         job=kwargs["metric_job"],
