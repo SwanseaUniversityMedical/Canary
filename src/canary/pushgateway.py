@@ -5,14 +5,16 @@ import aiohttp
 
 def format_metrics(timestamp: float, metrics: dict, labels: dict):
 
-    def format_label(label, value):
+    def format_label(kv):
+        label, value = kv
         return f"{label}=\"{value}\""
 
     timestamp = f"{int(float(timestamp) * 1000):d}"
     labels |= dict(timestamp=timestamp)
     labels_str = ", ".join(map(format_label, labels.items()))
 
-    def format_metric(metric, value):
+    def format_metric(kv):
+        metric, value = kv
         return f"""
         # TYPE canary_{metric} gauge
         canary_{metric}{{{labels_str}}} {value} {timestamp}
