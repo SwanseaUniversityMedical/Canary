@@ -72,5 +72,7 @@ async def Monitor(name: str, spec: dict, pushgateway: dict):
 
     except asyncio.CancelledError:
         logging.info(f"{header} | cancelled")
+    except Exception as ex:
+        logging.error(f"{header} | error monitoring url", exc_info=ex)
     finally:
         logging.info(f"{header} | halting")
