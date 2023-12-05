@@ -59,8 +59,8 @@ async def Monitor(name: str, spec: dict, pushgateway: dict):
 
             await push_metrics(
                 **pushgateway,
+                timestamp=datetime.datetime.now().timestamp(),
                 labels=dict(
-                    timestamp=datetime.datetime.now().timestamp(),
                     monitor=name,
                     url=spec["url"]
                 ),

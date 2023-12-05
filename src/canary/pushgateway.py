@@ -3,12 +3,13 @@ import urllib.parse
 import aiohttp
 
 
-def format_metrics(metrics: dict, labels: dict):
+def format_metrics(timestamp: float, metrics: dict, labels: dict):
 
     def format_label(label, value):
         return f"{label}=\"{value}\""
 
-    timestamp = f"{int(float(labels['timestamp']) * 1000):d}"
+    timestamp = f"{int(float(timestamp) * 1000):d}"
+    labels |= dict(timestamp=timestamp)
     labels_str = ", ".join(map(format_label, labels.items()))
 
     def format_metric(metric, value):
@@ -20,7 +21,7 @@ def format_metrics(metrics: dict, labels: dict):
     return "\n".join(map(format_metric, metrics.items()))
 
 
-async def push_metrics(url: str, job: str, instance: str, extra_labels: dict, labels: dict, metrics: dict):
+async def push_metrics(url: str, job: str, instance: str, extra_labels: dict, timestamp: float, labels: dict, metrics: dict):
     # Construct url to submit the metrics to
     metric_path = (
         f"/metrics/job/{urllib.parse.quote_plus(job)}"
@@ -39,7 +40,7 @@ async def push_metrics(url: str, job: str, instance: str, extra_labels: dict, la
     labels = extra_labels | labels
     logging.debug(f"{labels=}")
 
-    data = format_metrics(labels, metrics)
+    data = format_metrics(timestamp=timestamp, labels=labels, metrics=metrics)
 
     # Temporary debug of metrics output
     for line in data.split("\n"):
