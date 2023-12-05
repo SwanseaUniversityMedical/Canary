@@ -6,6 +6,7 @@ canary:
   extraEnv: []
   extraEnvFrom: []
 
+
 controller:
   enabled: true
 
@@ -19,3 +20,6 @@ controller:
 
   extraEnv: []
   extraEnvFrom: []
+
+  metric:
+    url:
