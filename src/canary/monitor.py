@@ -12,7 +12,7 @@ MIN_MONITOR_INTERVAL = 5  # seconds
 async def Monitor(name: str, spec: dict, labels: dict):
     """
     Monitors a given url at a regular interval and logs the result to prometheus.
-    This co-routine loops forever unless it is externally cancelled, such as to recreate it with new settings.
+    This co-routine loops forever unless it is externally cancelled, such as to recreate it with new settings..
     """
 
     # Hard clamp the interval to minimum of 5s to prevent DOS runaway
