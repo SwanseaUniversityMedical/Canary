@@ -3,6 +3,7 @@ import collections
 
 from prometheus_client import Gauge
 
+
 class EventWindowGauge:
 
     def __init__(self, name: str, documentation: str, labelnames: list, window: float):
