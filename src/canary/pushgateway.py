@@ -32,7 +32,14 @@ async def push_metrics(url: str, job: str, instance: str, extra_labels: dict, la
     url = urllib.parse.urljoin(url, metric_path)
     logging.debug(f"pushing metrics [{url=}]")
 
-    data = format_metrics((extra_labels | labels), metrics)
+    logging.debug(f"{extra_labels=}")
+    logging.debug(f"{labels=}")
+    logging.debug(f"{metrics=}")
+
+    labels = extra_labels | labels
+    logging.debug(f"{labels=}")
+
+    data = format_metrics(labels, metrics)
 
     # Temporary debug of metrics output
     for line in data.split("\n"):
