@@ -6,9 +6,3 @@ metadata:
 spec:
   url: https://www.josswhittle.com
   interval: 30 #seconds
-
-
-cat <<EOF | curl --data-binary @- http://prometheus-pushgateway.hiru-mgmt-monitoring.svc.cluster.local:9091/metrics/job/canary/instance/test
-# TYPE canary_status gauge
-canary_status{k8s_node_name="k8d-dsb-s305", k8s_pod_name="canary-controller-64bc8877bb-cj2gm", k8s_pod_namespace="canary", monitor="canary.blog", url="https://www.josswhittle.com", timestamp="1701782075990"} 200
-EOF
