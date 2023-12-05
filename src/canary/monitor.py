@@ -4,6 +4,8 @@ import aiohttp
 import urllib.parse
 from prometheus_client import Gauge
 
+from .metrics import EventWindowGauge
+
 MIN_MONITOR_INTERVAL = 5  # seconds
 
 
@@ -38,6 +40,26 @@ async def Monitor(name: str, spec: dict, labels: dict):
         documentation="Timestamp of the most recent time a monitor was unhealthy.",
         labelnames=list(labels.keys()),
     )
+    unhealthy_event_gauges = [
+        EventWindowGauge(
+            name="canary_unhealthy_1m",
+            documentation="Number of times the monitor was unhealthy in the last minute.",
+            labelnames=list(labels.keys()),
+            window=(60 * 1)
+        ),
+        EventWindowGauge(
+            name="canary_unhealthy_5m",
+            documentation="Number of times the monitor was unhealthy in the last 5 minutes.",
+            labelnames=list(labels.keys()),
+            window=(60 * 5)
+        ),
+        EventWindowGauge(
+            name="canary_unhealthy_1h",
+            documentation="Number of times the monitor was unhealthy in the last hour.",
+            labelnames=list(labels.keys()),
+            window=(60 * 60)
+        )
+    ]
 
     header = f"[{name=}] [{interval=}] [{url=}]"
     logging.info(f"{header} | polling")
@@ -59,6 +81,8 @@ async def Monitor(name: str, spec: dict, labels: dict):
                 # Update the unhealthy metric
                 if not healthy:
                     unhealthy_lastseen_gauge.labels(**labels).set_to_current_time()
+                    for gauge in unhealthy_event_gauges:
+                        gauge.update(labels=labels)
 
                 logging.info(f"{header} | poll [{status=}] [{healthy=}]")
 
@@ -70,6 +94,8 @@ async def Monitor(name: str, spec: dict, labels: dict):
 
                 # Update the unhealthy metric
                 unhealthy_lastseen_gauge.labels(**labels).set_to_current_time()
+                for gauge in unhealthy_event_gauges:
+                    gauge.update(labels=labels)
 
             # Await the minimum interval, returns immediately if it's already passed
             await interval_task

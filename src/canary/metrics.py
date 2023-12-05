@@ -1,31 +1,20 @@
 import time
 import collections
 
-from prometheus_client import CollectorRegistry, Gauge
-
-
-def format_labels(labels: dict):
-
-    def format_label(kv):
-        label, value = kv
-        return f"{label}=\"{value}\""
-
-    return ", ".join(map(format_label, labels.items()))
-
+from prometheus_client import Gauge
 
 class EventWindowGauge:
 
-    def __init__(self, name: str, documentation: str, labels: dict, registry: CollectorRegistry, window: float):
+    def __init__(self, name: str, documentation: str, labelnames: list, window: float):
         self.queue = collections.deque()
         self.window = max(1., float(window))
         self.metric = Gauge(
             name=name,
             documentation=documentation,
-            labelnames=format_labels(labels),
-            registry=registry
+            labelnames=labelnames
         )
 
-    def update(self):
+    def update(self, labels: dict):
         # Get the current timestamp
         timestamp = time.time()
 
@@ -38,4 +27,4 @@ class EventWindowGauge:
                 self.queue.popleft()
 
         # Metric is the number of samples currently in the queue within the time window
-        self.metric.set(len(self.queue))
+        self.metric.labels(**labels).set(len(self.queue))
