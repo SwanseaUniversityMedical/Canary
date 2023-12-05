@@ -28,8 +28,7 @@ async def push_metrics(url: str, job: str, instance: str, extra_labels: dict, la
     )
 
     url = urllib.parse.urlparse(url)
-    url.query = ""
-    url = urllib.parse.urlunparse(url)
+    url = urllib.parse.urlunparse((url.scheme, url.netloc, url.path, "", "", ""))
     url = urllib.parse.urljoin(url, metric_path)
     logging.debug(f"pushing metrics [{url=}]")
 
