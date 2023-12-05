@@ -46,4 +46,4 @@ async def push_metrics(url: str, job: str, instance: str, extra_labels: dict, la
                 assert response.status == 200
 
     except Exception as ex:
-        logging.error(f"error pushing metrics to gateway", exc_info=ex)
+        logging.error("error pushing metrics to gateway", exc_info=ex)
