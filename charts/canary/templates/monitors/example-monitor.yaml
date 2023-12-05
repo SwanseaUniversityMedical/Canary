@@ -1,9 +1,9 @@
 apiVersion: "canary.ukserp.ac.uk/v1"
 kind: CanaryHTTPMonitor
 metadata:
-  name: github
+  name: blog
   namespace: {{ .Release.Namespace }}
 spec:
-  url: https://github.com/SwanseaUniversityMedical/Canary
+  url: https://www.josswhittle.com
   interval: 30 #seconds
 
