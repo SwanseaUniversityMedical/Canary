@@ -8,6 +8,39 @@ from .metrics import EventWindowGauge
 
 MIN_MONITOR_INTERVAL = 5  # seconds
 
+LABELS = ["k8s_node_name", "k8s_pod_name", "k8s_pod_namespace", "monitor", "url"]
+
+STATUS_LASTSEEN_GAUGE = Gauge(
+    name="canary_status_lastseen",
+    documentation="Timestamp of the most recent time a status code was observed.",
+    labelnames=LABELS+["status"],
+)
+UNHEALTHY_LASTSEEN_GAUGE = Gauge(
+    name="canary_unhealthy_lastseen",
+    documentation="Timestamp of the most recent time a monitor was unhealthy.",
+    labelnames=LABELS,
+)
+UNHEALTHY_EVENT_GAUGES = [
+    EventWindowGauge(
+        name="canary_unhealthy_1m",
+        documentation="Number of times the monitor was unhealthy in the last minute.",
+        labelnames=LABELS,
+        window=(60 * 1)
+    ),
+    EventWindowGauge(
+        name="canary_unhealthy_5m",
+        documentation="Number of times the monitor was unhealthy in the last 5 minutes.",
+        labelnames=LABELS,
+        window=(60 * 5)
+    ),
+    EventWindowGauge(
+        name="canary_unhealthy_1h",
+        documentation="Number of times the monitor was unhealthy in the last hour.",
+        labelnames=LABELS,
+        window=(60 * 60)
+    )
+]
+
 
 async def Monitor(name: str, spec: dict, labels: dict):
     """
@@ -17,7 +50,6 @@ async def Monitor(name: str, spec: dict, labels: dict):
 
     try:
         while True:
-
             try:
                 # Hard clamp the interval to minimum of 5s to prevent DOS runaway
                 # Still could be bad if running on a lot of nodes
@@ -25,45 +57,13 @@ async def Monitor(name: str, spec: dict, labels: dict):
 
                 # Allow this to throw an exception if the url is invalid
                 url = spec["url"]
-                #urllib.parse.urlparse(url)
+                urllib.parse.urlparse(url)
 
                 # TODO handle this as a list of valid statuses
                 expected_status = str(spec["status"])
 
                 # Add extra labels
                 labels |= dict(monitor=name, url=url)
-
-                # Gauges for different status codes
-                status_lastseen_gauge = Gauge(
-                    name="canary_status_lastseen",
-                    documentation="Timestamp of the most recent time a status code was observed.",
-                    labelnames=list(labels.keys()) + ["status"],
-                )
-                unhealthy_lastseen_gauge = Gauge(
-                    name="canary_unhealthy_lastseen",
-                    documentation="Timestamp of the most recent time a monitor was unhealthy.",
-                    labelnames=list(labels.keys()),
-                )
-                unhealthy_event_gauges = [
-                    EventWindowGauge(
-                        name="canary_unhealthy_1m",
-                        documentation="Number of times the monitor was unhealthy in the last minute.",
-                        labelnames=list(labels.keys()),
-                        window=(60 * 1)
-                    ),
-                    EventWindowGauge(
-                        name="canary_unhealthy_5m",
-                        documentation="Number of times the monitor was unhealthy in the last 5 minutes.",
-                        labelnames=list(labels.keys()),
-                        window=(60 * 5)
-                    ),
-                    EventWindowGauge(
-                        name="canary_unhealthy_1h",
-                        documentation="Number of times the monitor was unhealthy in the last hour.",
-                        labelnames=list(labels.keys()),
-                        window=(60 * 60)
-                    )
-                ]
 
                 header = f"[{name=}] [{interval=}] [{url=}]"
                 logging.info(f"{header} | polling")
@@ -83,21 +83,21 @@ async def Monitor(name: str, spec: dict, labels: dict):
 
                         # Update the unhealthy metric
                         if not healthy:
-                            unhealthy_lastseen_gauge.labels(**labels).set_to_current_time()
-                            for gauge in unhealthy_event_gauges:
+                            UNHEALTHY_LASTSEEN_GAUGE.labels(**labels).set_to_current_time()
+                            for gauge in UNHEALTHY_EVENT_GAUGES:
                                 gauge.update(labels=labels)
 
                         logging.info(f"{header} | poll [{status=}] [{healthy=}]")
 
                         # Update the status metric
-                        status_lastseen_gauge.labels(**(labels | dict(status=status))).set_to_current_time()
+                        STATUS_LASTSEEN_GAUGE.labels(**(labels | dict(status=status))).set_to_current_time()
 
                     except Exception as ex:
                         logging.exception(f"{header} | ERROR", exc_info=ex)
 
                         # Update the unhealthy metric
-                        unhealthy_lastseen_gauge.labels(**labels).set_to_current_time()
-                        for gauge in unhealthy_event_gauges:
+                        UNHEALTHY_LASTSEEN_GAUGE.labels(**labels).set_to_current_time()
+                        for gauge in UNHEALTHY_EVENT_GAUGES:
                             gauge.update(labels=labels)
 
                     # Await the minimum interval, returns immediately if it's already passed
