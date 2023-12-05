@@ -7,10 +7,10 @@ class URL(click.ParamType):
 
     def convert(self, value, param, ctx):
         if not isinstance(value, tuple):
-            value = urllib.parse.urlparse(value)
-            if value.scheme not in ("http", "https"):
+            parsed = urllib.parse.urlparse(value)
+            if parsed.scheme not in ("http", "https"):
                 self.fail(
-                    f"invalid URL scheme ({value.scheme}). Only HTTP URLs are allowed",
+                    f"invalid URL scheme ({parsed.scheme}) for url ({value}). Only HTTP URLs are allowed",
                     param,
                     ctx,
                 )
