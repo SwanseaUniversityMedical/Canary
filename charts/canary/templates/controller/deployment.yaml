@@ -28,6 +28,11 @@ spec:
         component: controller
         release: {{ .Release.Name }}
 
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: /metrics
+        prometheus.io/port: "8080"
+
     spec:
 
       restartPolicy: Always
@@ -36,6 +41,9 @@ spec:
       containers:
         - name: controller
           {{- include "canary.image" (dict "image" .Values.controller.image) | indent 10 }}
+
+          ports:
+            - containerPort: 8080
 
           envFrom:
             {{- include "canary.envFrom" (dict "Release" .Release "Values" .Values "extraEnv" .Values.controller.extraEnvFrom) | indent 12 }}
@@ -53,20 +61,16 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.namespace
-
             - name: CANARY_METRIC_INSTANCE
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.name
             - name: CANARY_METRIC_JOB
               value: {{ .Release.Name }}
-
             {{- if .Values.controller.metric.url }}
             - name: CANARY_METRIC_URL
               value: {{ .Values.controller.metric.url }}
             {{- end }}
-
-
             {{- include "canary.env" (dict "Release" .Release "Values" .Values "extraEnv" .Values.controller.extraEnv) | indent 12 }}
 
 {{- end }}

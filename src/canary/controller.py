@@ -1,6 +1,7 @@
 import logging
 import asyncio
 import kubernetes_asyncio as k8s
+from prometheus_async.aio.web import start_http_server
 
 from .monitor import Monitor
 
@@ -12,15 +13,10 @@ async def Controller(*args, **kwargs):
     logging.debug(f"controller | {kwargs=}")
 
     update_interval = kwargs["k8s_update_interval"]
-    pushgateway = dict(
-        url=kwargs["metric_url"],
-        job=kwargs["metric_job"],
-        instance=kwargs["metric_instance"],
-        extra_labels=dict(
-            k8s_node_name=kwargs["k8s_node_name"],
-            k8s_pod_name=kwargs["k8s_pod_name"],
-            k8s_pod_namespace=kwargs["k8s_pod_namespace"]
-        )
+    labels = dict(
+        k8s_node_name=kwargs["k8s_node_name"],
+        k8s_pod_name=kwargs["k8s_pod_name"],
+        k8s_pod_namespace=kwargs["k8s_pod_namespace"]
     )
 
     logging.info("controller | loading kube api config")
@@ -29,6 +25,7 @@ async def Controller(*args, **kwargs):
     monitors = dict()
 
     try:
+        await start_http_server()
 
         while True:
 
@@ -56,8 +53,7 @@ async def Controller(*args, **kwargs):
                 if name not in manifests:
                     logging.info(f"canceling monitor [{name=}]")
                     monitors[name]["task"].cancel()
-                    # Don't care about waiting for this
-                    # await monitors[name]["task"]
+                    await monitors[name]["task"]
                     monitors.pop(name)
 
             # Create or re-create monitors to match the live manifests
@@ -77,7 +73,7 @@ async def Controller(*args, **kwargs):
                         Monitor(
                             name=name,
                             spec=manifest["spec"],
-                            pushgateway=pushgateway
+                            labels=labels
                         )
                     )
 
