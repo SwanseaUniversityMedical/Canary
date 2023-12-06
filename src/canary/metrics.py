@@ -1,9 +1,6 @@
-import asyncio
 import logging
 import time
 import collections
-import functools
-import json
 
 from aiohttp import web
 from prometheus_client import Gauge
@@ -35,7 +32,7 @@ class MetricServer:
 
     async def render(self):
 
-        logging.info(f"rendering metrics")
+        logging.info("rendering metrics")
 
         timestamp = time.time()
 
