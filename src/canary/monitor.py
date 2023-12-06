@@ -1,10 +1,11 @@
 import logging
 import asyncio
+import time
+
 import aiohttp
 import urllib.parse
-from prometheus_client import Gauge
 
-from .metrics import EventWindowGauge
+from .metrics import MetricServer
 
 MIN_MONITOR_INTERVAL = 5  # seconds
 
@@ -16,65 +17,8 @@ LABELS = [
     "url"
 ]
 
-# STATUS_LASTSEEN_GAUGE = Gauge(
-#     name="canary_status_lastseen",
-#     documentation="Timestamp of the most recent time a status code was observed.",
-#     labelnames=LABELS+["status"],
-# )
-# UNHEALTHY_LASTSEEN_GAUGE = Gauge(
-#     name="canary_unhealthy_lastseen",
-#     documentation="Timestamp of the most recent time a monitor was unhealthy.",
-#     labelnames=LABELS,
-# )
-# UNHEALTHY_EVENT_GAUGES = [
-#     EventWindowGauge(
-#         name="canary_unhealthy_1m",
-#         documentation="Number of times the monitor was unhealthy in the last minute.",
-#         labelnames=LABELS,
-#         window=(60 * 1)
-#     ),
-#     EventWindowGauge(
-#         name="canary_unhealthy_5m",
-#         documentation="Number of times the monitor was unhealthy in the last 5 minutes.",
-#         labelnames=LABELS,
-#         window=(60 * 5)
-#     ),
-#     EventWindowGauge(
-#         name="canary_unhealthy_1h",
-#         documentation="Number of times the monitor was unhealthy in the last hour.",
-#         labelnames=LABELS,
-#         window=(60 * 60)
-#     )
-# ]
-HEALTHY_LASTSEEN_GAUGE = Gauge(
-    name="canary_healthy_lastseen",
-    documentation="Timestamp of the most recent time a monitor was healthy.",
-    labelnames=LABELS,
-    multiprocess_mode="livemostrecent"
-)
-HEALTHY_EVENT_GAUGES = [
-    EventWindowGauge(
-        name="canary_healthy_1m",
-        documentation="Number of times the monitor was healthy in the last minute.",
-        labelnames=LABELS,
-        window=(60 * 1)
-    ),
-    EventWindowGauge(
-        name="canary_healthy_5m",
-        documentation="Number of times the monitor was healthy in the last 5 minutes.",
-        labelnames=LABELS,
-        window=(60 * 5)
-    ),
-    EventWindowGauge(
-        name="canary_healthy_1h",
-        documentation="Number of times the monitor was healthy in the last hour.",
-        labelnames=LABELS,
-        window=(60 * 60)
-    )
-]
 
-
-async def Monitor(name: str, spec: dict, labels: dict):
+async def Monitor(name: str, spec: dict, labels: dict, metric_server: MetricServer):
     """
     Monitors a given url at a regular interval and logs the result to prometheus.
     This co-routine loops forever unless it is externally cancelled, such as to recreate it with new settings..
@@ -119,16 +63,12 @@ async def Monitor(name: str, spec: dict, labels: dict):
 
             # Update the unhealthy metric
             if healthy:
-                HEALTHY_LASTSEEN_GAUGE.labels(**labels).set_to_current_time()
-                for gauge in HEALTHY_EVENT_GAUGES:
-                    gauge.update(labels=labels)
-            # else:
-            #     UNHEALTHY_LASTSEEN_GAUGE.labels(**labels).set_to_current_time()
-            #     for gauge in UNHEALTHY_EVENT_GAUGES:
-            #         gauge.update(labels=labels)
+                await metric_server.add(metric="canary_healthy_lastseen", labels=labels, value=time.time())
+            else:
+                await metric_server.add(metric="canary_unhealthy_lastseen", labels=labels, value=time.time())
 
             # Update the status metric
-            # STATUS_LASTSEEN_GAUGE.labels(**(labels | dict(status=status))).set_to_current_time()
+            await metric_server.add(metric="canary_status_lastseen", labels=(labels | dict(status=status)), value=time.time())
 
             # Await the minimum interval, returns immediately if it's already passed
             await interval_task
