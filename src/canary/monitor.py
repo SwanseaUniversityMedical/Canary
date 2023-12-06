@@ -50,6 +50,7 @@ HEALTHY_LASTSEEN_GAUGE = Gauge(
     name="canary_healthy_lastseen",
     documentation="Timestamp of the most recent time a monitor was healthy.",
     labelnames=LABELS,
+    multiprocess_mode="livemostrecent"
 )
 HEALTHY_EVENT_GAUGES = [
     EventWindowGauge(
@@ -91,7 +92,7 @@ async def Monitor(name: str, spec: dict, labels: dict):
     expected_status = str(spec["status"])
 
     # Add extra labels
-    labels |= dict(monitor=name, url=url)
+    labels = labels | dict(monitor=name, url=url)
 
     header = f"[{name=}] [{interval=}] [{url=}]"
     logging.info(f"{header} | polling")
@@ -106,7 +107,7 @@ async def Monitor(name: str, spec: dict, labels: dict):
                 # Poll the url
                 timeout = aiohttp.ClientTimeout(total=interval)
                 async with aiohttp.ClientSession(timeout=timeout) as session:
-                    async with session.get(url, timeout=interval) as response:
+                    async with session.get(url, timeout=interval, proxy="http://192.168.10.15:8080") as response:
                         status = str(response.status)
 
                 # Check if the status code was acceptable

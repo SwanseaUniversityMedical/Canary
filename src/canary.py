@@ -13,27 +13,6 @@ logging.basicConfig(
 
 @click.command()
 @click.option(
-    "--metric-url",
-    type=URL(),
-    required=True,
-    help="URL to a prometheus pushgateway.",
-    show_default=True
-)
-@click.option(
-    "--metric-job",
-    type=str,
-    required=True,
-    help="Prometheus job name for metrics.",
-    show_default=True
-)
-@click.option(
-    "--metric-instance",
-    type=str,
-    required=True,
-    help="Prometheus instance name for metrics.",
-    show_default=True
-)
-@click.option(
     "--k8s-update-interval",
     type=click.IntRange(min=5, max_open=True),
     default=30,

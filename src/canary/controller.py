@@ -1,5 +1,11 @@
+import glob
 import logging
 import asyncio
+import os
+
+import aiohttp
+import yaml
+
 import kubernetes_asyncio as k8s
 from prometheus_async.aio.web import start_http_server
 
@@ -37,6 +43,22 @@ async def Controller(*args, **kwargs):
                     version="v1",
                     plural="canaryhttpmonitors"
                 )
+
+            # manifest_path = os.path.join(
+            #     os.path.dirname(__file__),
+            #     "../../charts/canary/templates/monitors/*.yaml"
+            # )
+            # manifest_paths = list(
+            #     glob.glob(
+            #         manifest_path
+            #     )
+            # )
+            # manifests = dict(items=list())
+            # for manifest_path in manifest_paths:
+            #     with open(manifest_path, "r") as fp:
+            #         manifest = yaml.safe_load(fp)
+            #         manifests["items"].append(manifest)
+            #         logging.info(manifest)
 
             # Convert the manifests into a dict keyed on namespace.name
             manifests = {

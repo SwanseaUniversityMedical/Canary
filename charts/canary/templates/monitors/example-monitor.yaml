@@ -1,8 +1,9 @@
 apiVersion: "canary.ukserp.ac.uk/v1"
 kind: CanaryHTTPMonitor
 metadata:
-  name: blog
-  namespace: {{ .Release.Namespace }}
+  name: blog-404
+  namespace: canary
 spec:
   url: https://www.josswhittle.com
-  interval: 30 #seconds
+  interval: 5 #seconds
+  status: 200

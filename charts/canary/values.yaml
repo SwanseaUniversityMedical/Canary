@@ -20,6 +20,3 @@ controller:
 
   extraEnv: []
   extraEnvFrom: []
-
-  metric:
-    url:
