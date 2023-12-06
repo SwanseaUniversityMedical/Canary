@@ -1,7 +1,7 @@
 apiVersion: "canary.ukserp.ac.uk/v1"
 kind: CanaryHTTPMonitor
 metadata:
-  name: blog-404
+  name: blog
   namespace: canary
 spec:
   url: https://www.josswhittle.com
