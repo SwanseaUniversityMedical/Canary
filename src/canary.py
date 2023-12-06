@@ -2,7 +2,6 @@ import logging
 import click
 import asyncio
 
-from canary.utils.click import URL
 from canary.controller import Controller
 
 logging.basicConfig(

@@ -50,7 +50,10 @@ class MetricServer:
 
             label_str = ",".join(map(format_label, metric["labels"].items()))
 
-            return f"{metric['metric']}{{{label_str}}} {metric['value']} {metric['timestamp']}"
+            return f"""
+            TYPE {metric['metric']} gauge
+            {metric['metric']}{{{label_str}}} {metric['value']}
+            """
 
         return "\n".join(map(format_metric, self.metrics.values()))
 
