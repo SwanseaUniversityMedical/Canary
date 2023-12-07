@@ -97,15 +97,15 @@ async def Monitor(name: str, spec: dict, labels: dict, proxy: str):
 
         try:
             HEALTHY_GAUGE.remove(*labels.values())
-        except KeyError as ex:
+        except KeyError:
             pass
 
         try:
             HEALTHY_LASTSEEN_GAUGE.remove(*labels.values())
-        except KeyError as ex:
+        except KeyError:
             pass
 
         try:
             UNHEALTHY_LASTSEEN_GAUGE.remove(*labels.values())
-        except KeyError as ex:
+        except KeyError:
             pass
