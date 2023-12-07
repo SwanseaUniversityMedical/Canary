@@ -6,12 +6,12 @@ from prometheus_client import Gauge
 
 MIN_MONITOR_INTERVAL = 5  # seconds
 
-LABELS = [
+LABELS = (
     "k8s_node_name",
     "k8s_pod_name",
     "k8s_pod_namespace",
     "monitor",
-]
+)
 
 HEALTHY_GAUGE = Gauge(
     name="canary_healthy",
@@ -49,6 +49,9 @@ async def Monitor(name: str, spec: dict, labels: dict, proxy: str):
 
     # Add extra labels
     labels = labels | dict(monitor=name)
+
+    # Normalize label order to ensure we can remove labels later
+    labels = {key: labels[key] for key in LABELS}
 
     header = f"[{name=}] [{interval=}] [{url=}]"
     logging.info(f"{header} | polling")
@@ -92,6 +95,17 @@ async def Monitor(name: str, spec: dict, labels: dict, proxy: str):
     finally:
         logging.info(f"{header} | halting")
 
-        HEALTHY_GAUGE.labels(**labels).clear()
-        HEALTHY_LASTSEEN_GAUGE.labels(**labels).clear()
-        UNHEALTHY_LASTSEEN_GAUGE.labels(**labels).clear()
+        try:
+            HEALTHY_GAUGE.remove(*labels.values())
+        except KeyError as ex:
+            pass
+
+        try:
+            HEALTHY_LASTSEEN_GAUGE.remove(*labels.values())
+        except KeyError as ex:
+            pass
+
+        try:
+            UNHEALTHY_LASTSEEN_GAUGE.remove(*labels.values())
+        except KeyError as ex:
+            pass
