@@ -5,5 +5,5 @@ metadata:
   namespace: canary
 spec:
   url: https://www.josswhittle.com
-  interval: 5 #seconds
+  interval: 30 #seconds
   status: 200
