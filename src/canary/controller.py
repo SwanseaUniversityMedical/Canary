@@ -1,12 +1,14 @@
+import glob
 import logging
 import asyncio
-# import glob
-# import os
-# import yaml
+import os
+
+import aiohttp
+import yaml
 
 import kubernetes_asyncio as k8s
+from prometheus_async.aio.web import start_http_server
 
-from .metrics import start_metric_server
 from .monitor import Monitor
 
 
@@ -29,7 +31,7 @@ async def Controller(*args, **kwargs):
     monitors = dict()
 
     try:
-        metric_server = await start_metric_server(window=60, port=8080)
+        await start_http_server(port=8080)
 
         while True:
 
@@ -68,13 +70,13 @@ async def Controller(*args, **kwargs):
             logging.debug(f"running {len(monitors)} monitors")
 
             # Cancel existing monitors that are not found in the live manifests
-            for name in list(monitors.keys()):
+            for name, monitor in monitors.items():
 
                 if name not in manifests:
                     logging.info(f"canceling monitor [{name=}]")
                     monitors[name]["task"].cancel()
                     await monitors[name]["task"]
-                    del monitors[name]
+                    monitors.pop(name)
 
             # Create or re-create monitors to match the live manifests
             for name, manifest in manifests.items():
@@ -83,7 +85,7 @@ async def Controller(*args, **kwargs):
                     logging.info(f"recreating monitor [{name=}]")
                     monitors[name]["task"].cancel()
                     await monitors[name]["task"]
-                    del monitors[name]
+                    monitors.pop(name)
 
                 if name not in monitors:
                     logging.info(f"spawning monitor [{name=}]")
@@ -93,8 +95,7 @@ async def Controller(*args, **kwargs):
                         Monitor(
                             name=name,
                             spec=manifest["spec"],
-                            labels=labels,
-                            metric_server=metric_server
+                            labels=labels
                         )
                     )
 
