@@ -11,7 +11,6 @@ LABELS = [
     "k8s_pod_name",
     "k8s_pod_namespace",
     "monitor",
-    "url"
 ]
 
 HEALTHY_GAUGE = Gauge(
@@ -49,7 +48,7 @@ async def Monitor(name: str, spec: dict, labels: dict, proxy: str):
     expected_status = str(spec["status"])
 
     # Add extra labels
-    labels = labels | dict(monitor=name, url=url)
+    labels = labels | dict(monitor=name)
 
     header = f"[{name=}] [{interval=}] [{url=}]"
     logging.info(f"{header} | polling")
