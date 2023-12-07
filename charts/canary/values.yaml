@@ -20,3 +20,7 @@ controller:
 
   extraEnv: []
   extraEnvFrom: []
+
+monitor:
+  example:
+    enabled: false
