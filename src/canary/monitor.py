@@ -4,8 +4,6 @@ import aiohttp
 import urllib.parse
 from prometheus_client import Gauge
 
-from .metrics import EventWindowGauge
-
 MIN_MONITOR_INTERVAL = 5  # seconds
 
 LABELS = [
@@ -16,65 +14,24 @@ LABELS = [
     "url"
 ]
 
-# STATUS_LASTSEEN_GAUGE = Gauge(
-#     name="canary_status_lastseen",
-#     documentation="Timestamp of the most recent time a status code was observed.",
-#     labelnames=LABELS+["status"],
-# )
-# UNHEALTHY_LASTSEEN_GAUGE = Gauge(
-#     name="canary_unhealthy_lastseen",
-#     documentation="Timestamp of the most recent time a monitor was unhealthy.",
-#     labelnames=LABELS,
-# )
-# UNHEALTHY_EVENT_GAUGES = [
-#     EventWindowGauge(
-#         name="canary_unhealthy_1m",
-#         documentation="Number of times the monitor was unhealthy in the last minute.",
-#         labelnames=LABELS,
-#         window=(60 * 1)
-#     ),
-#     EventWindowGauge(
-#         name="canary_unhealthy_5m",
-#         documentation="Number of times the monitor was unhealthy in the last 5 minutes.",
-#         labelnames=LABELS,
-#         window=(60 * 5)
-#     ),
-#     EventWindowGauge(
-#         name="canary_unhealthy_1h",
-#         documentation="Number of times the monitor was unhealthy in the last hour.",
-#         labelnames=LABELS,
-#         window=(60 * 60)
-#     )
-# ]
+HEALTHY_GAUGE = Gauge(
+    name="canary_healthy",
+    documentation="Health of the last poll for a url as a boolean 0 (unhealthy) or 1 (healthy).",
+    labelnames=LABELS,
+)
 HEALTHY_LASTSEEN_GAUGE = Gauge(
     name="canary_healthy_lastseen",
     documentation="Timestamp of the most recent time a monitor was healthy.",
     labelnames=LABELS,
-    multiprocess_mode="livemostrecent"
 )
-HEALTHY_EVENT_GAUGES = [
-    EventWindowGauge(
-        name="canary_healthy_1m",
-        documentation="Number of times the monitor was healthy in the last minute.",
-        labelnames=LABELS,
-        window=(60 * 1)
-    ),
-    EventWindowGauge(
-        name="canary_healthy_5m",
-        documentation="Number of times the monitor was healthy in the last 5 minutes.",
-        labelnames=LABELS,
-        window=(60 * 5)
-    ),
-    EventWindowGauge(
-        name="canary_healthy_1h",
-        documentation="Number of times the monitor was healthy in the last hour.",
-        labelnames=LABELS,
-        window=(60 * 60)
-    )
-]
+UNHEALTHY_LASTSEEN_GAUGE = Gauge(
+    name="canary_unhealthy_lastseen",
+    documentation="Timestamp of the most recent time a monitor was unhealthy.",
+    labelnames=LABELS,
+)
 
 
-async def Monitor(name: str, spec: dict, labels: dict):
+async def Monitor(name: str, spec: dict, labels: dict, proxy: str):
     """
     Monitors a given url at a regular interval and logs the result to prometheus.
     This co-routine loops forever unless it is externally cancelled, such as to recreate it with new settings..
@@ -107,7 +64,7 @@ async def Monitor(name: str, spec: dict, labels: dict):
                 # Poll the url
                 timeout = aiohttp.ClientTimeout(total=interval)
                 async with aiohttp.ClientSession(timeout=timeout) as session:
-                    async with session.get(url, timeout=interval, proxy="http://192.168.10.15:8080") as response:
+                    async with session.get(url, timeout=interval, proxy=proxy) as response:
                         status = str(response.status)
 
                 # Check if the status code was acceptable
@@ -119,16 +76,12 @@ async def Monitor(name: str, spec: dict, labels: dict):
 
             # Update the unhealthy metric
             if healthy:
+                HEALTHY_GAUGE.labels(**labels).set(1)
                 HEALTHY_LASTSEEN_GAUGE.labels(**labels).set_to_current_time()
-                for gauge in HEALTHY_EVENT_GAUGES:
-                    gauge.update(labels=labels)
-            # else:
-            #     UNHEALTHY_LASTSEEN_GAUGE.labels(**labels).set_to_current_time()
-            #     for gauge in UNHEALTHY_EVENT_GAUGES:
-            #         gauge.update(labels=labels)
 
-            # Update the status metric
-            # STATUS_LASTSEEN_GAUGE.labels(**(labels | dict(status=status))).set_to_current_time()
+            else:
+                HEALTHY_GAUGE.labels(**labels).set(0)
+                UNHEALTHY_LASTSEEN_GAUGE.labels(**labels).set_to_current_time()
 
             # Await the minimum interval, returns immediately if it's already passed
             await interval_task
@@ -139,3 +92,7 @@ async def Monitor(name: str, spec: dict, labels: dict):
         logging.error(f"{header} | error monitoring url", exc_info=ex)
     finally:
         logging.info(f"{header} | halting")
+
+        HEALTHY_GAUGE.labels(**labels).clear()
+        HEALTHY_LASTSEEN_GAUGE.labels(**labels).clear()
+        UNHEALTHY_LASTSEEN_GAUGE.labels(**labels).clear()

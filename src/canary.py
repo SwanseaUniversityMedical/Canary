@@ -40,6 +40,13 @@ logging.basicConfig(
     help="Namespace where the controller is running.",
     show_default=True
 )
+@click.option(
+    "--proxy",
+    type=URL(),
+    default=None,
+    help="URL to a HTTP proxy sever.",
+    show_default=True
+)
 def main(*args, **kwargs):
     logging.info("spawning controller")
     asyncio.run(Controller(*args, **kwargs))
