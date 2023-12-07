@@ -49,13 +49,13 @@ async def Controller(*args, **kwargs):
             logging.debug(f"running {len(monitors)} monitors")
 
             # Cancel existing monitors that are not found in the live manifests
-            for name, monitor in monitors.items():
+            for name in list(monitors.keys()):
 
                 if name not in manifests:
                     logging.info(f"canceling monitor [{name=}]")
                     monitors[name]["task"].cancel()
                     await monitors[name]["task"]
-                    monitors.pop(name)
+                    del monitors[name]
 
             # Create or re-create monitors to match the live manifests
             for name, manifest in manifests.items():
@@ -64,7 +64,7 @@ async def Controller(*args, **kwargs):
                     logging.info(f"recreating monitor [{name=}]")
                     monitors[name]["task"].cancel()
                     await monitors[name]["task"]
-                    monitors.pop(name)
+                    del monitors[name]
 
                 if name not in monitors:
                     logging.info(f"spawning monitor [{name=}]")
