@@ -4,13 +4,15 @@ crds:
 controller:
   enabled: true
 
-  tolerations: {}
+  tolerations: []
   nodeSelector: {}
   affinity: {}
   terminationGracePeriod: 15
 
   labels: {}
   annotations: {}
+  extraEnv: []
+  extraEnvFrom: []
 
   podAnnotations:
     prometheus.io/scrape: "true"
@@ -33,9 +35,6 @@ controller:
     pullSecret: ""
     uid: 1001
     gid: 1001
-
-  extraEnv: []
-  extraEnvFrom: []
 
 monitor:
   example:
