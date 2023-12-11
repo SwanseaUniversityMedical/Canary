@@ -20,9 +20,10 @@ async def Controller(*args, **kwargs):
     update_interval = kwargs["k8s_update_interval"]
     proxy = kwargs["proxy"]
     labels = dict(
-        k8s_node_name=kwargs["k8s_node_name"],
-        k8s_pod_name=kwargs["k8s_pod_name"],
-        k8s_pod_namespace=kwargs["k8s_pod_namespace"]
+        node=kwargs["k8s_node_name"],
+        pod=kwargs["k8s_pod_name"],
+        namespace=kwargs["k8s_pod_namespace"],
+        release=kwargs["k8s_release_name"]
     )
 
     logging.info("controller | loading kube api config")

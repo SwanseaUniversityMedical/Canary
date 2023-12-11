@@ -41,6 +41,13 @@ logging.basicConfig(
     show_default=True
 )
 @click.option(
+    "--k8s-release-name",
+    type=str,
+    required=True,
+    help="Name of the helm release.",
+    show_default=True
+)
+@click.option(
     "--proxy",
     type=URL(),
     default=None,

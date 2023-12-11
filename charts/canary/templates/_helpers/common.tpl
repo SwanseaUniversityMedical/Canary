@@ -101,11 +101,6 @@ The list of `env` vars for canary pods
 EXAMPLE USAGE: {{ include "canary.env" (dict "Release" .Release "Values" .Values "extraEnv" $extraEnv) }}
 */}}
 {{- define "canary.env" }}
-{{- /* user-defined (global) */ -}}
-{{- if .Values.canary.extraEnv }}
-{{ toYaml .Values.canary.extraEnv }}
-{{- end }}
-
 {{- /* user-defined */ -}}
 {{- if .extraEnv }}
 {{ toYaml .extraEnv }}
@@ -117,11 +112,6 @@ The list of `envFrom` vars for canary pods
 EXAMPLE USAGE: {{ include "canary.envFrom" (dict "Release" .Release "Values" .Values "extraEnvFrom" $extraEnvFrom) }}
 */}}
 {{- define "canary.envFrom" }}
-{{- /* user-defined (global) */ -}}
-{{- if .Values.canary.extraEnvFrom }}
-{{ toYaml .Values.canary.extraEnvFrom }}
-{{- end }}
-
 {{- /* user-defined */ -}}
 {{- if .extraEnvFrom }}
 {{ toYaml .extraEnvFrom }}

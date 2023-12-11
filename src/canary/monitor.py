@@ -7,9 +7,10 @@ from prometheus_client import Gauge
 MIN_MONITOR_INTERVAL = 5  # seconds
 
 LABELS = (
-    "k8s_node_name",
-    "k8s_pod_name",
-    "k8s_pod_namespace",
+    "node",
+    "pod",
+    "namespace",
+    "release",
     "monitor",
 )
 
