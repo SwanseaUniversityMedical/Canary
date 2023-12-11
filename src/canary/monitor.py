@@ -1,5 +1,7 @@
 import logging
 import asyncio
+import time
+
 import aiohttp
 import urllib.parse
 from prometheus_client import Gauge
@@ -80,11 +82,11 @@ async def Monitor(name: str, spec: dict, labels: dict, proxy: str):
             # Update the unhealthy metric
             if healthy:
                 HEALTHY_GAUGE.labels(**labels).set(1)
-                HEALTHY_LASTSEEN_GAUGE.labels(**labels).set_to_current_time()
+                HEALTHY_LASTSEEN_GAUGE.labels(**labels).set(time.time() * 1000.)
 
             else:
                 HEALTHY_GAUGE.labels(**labels).set(0)
-                UNHEALTHY_LASTSEEN_GAUGE.labels(**labels).set_to_current_time()
+                UNHEALTHY_LASTSEEN_GAUGE.labels(**labels).set(time.time() * 1000.)
 
             # Await the minimum interval, returns immediately if it's already passed
             await interval_task
