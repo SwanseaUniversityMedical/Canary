@@ -30,10 +30,10 @@ spec:
                 status:
                   type: integer
                   default: 200
-                required:
-                  - url
-                  - interval
-                  - status
+              required:
+                - url
+                - interval
+                - status
   scope: Namespaced
   names:
     plural: canaryhttpmonitors
