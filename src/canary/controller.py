@@ -11,7 +11,7 @@ from prometheus_client import Gauge
 from .monitor import Monitor
 
 
-async def Controller(*args, **kwargs):
+async def controller(*args, **kwargs):
 
     logging.info("controller | starting")
     logging.debug(f"controller | {args=}")
@@ -135,3 +135,5 @@ async def Controller(*args, **kwargs):
             monitor["task"].cancel()
 
         await asyncio.gather(*map(lambda m: m["task"], monitors.values()))
+
+Controller = controller

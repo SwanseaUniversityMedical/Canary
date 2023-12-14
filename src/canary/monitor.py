@@ -39,50 +39,51 @@ UNHEALTHY_LASTSEEN_GAUGE = Gauge(
 STATUS_LASTSEEN_GAUGE = Gauge(
     name="canary_status_lastseen",
     documentation="Timestamp of the most recent time a monitor showed a status code.",
-    labelnames=LABELS+["status"],
+    labelnames=LABELS + ["status"],
 )
 
 
-async def Monitor(name: str, spec: dict, labels: dict, proxy: str):
+async def monitor(name: str, spec: dict, labels: dict, proxy: str):
     """
     Monitors a given url at a regular interval and logs the result to prometheus.
     This co-routine loops forever unless it is externally cancelled, such as to recreate it with new settings..
     """
 
-    # Hard clamp the interval to minimum of 5s to prevent DOS runaway
-    # Still could be bad if running on a lot of nodes
-    interval = max(MIN_MONITOR_INTERVAL, int(spec["interval"]))
-
-    # Allow this to throw an exception if the url is invalid
-    url = spec["url"]
-    urllib.parse.urlparse(url)
-
-    expected_status = str(spec["status"])
-
-    # If this monitor specifies its own proxy setting
-    if spec["proxy"] is not None:
-        if spec["proxy"]["url"] is None:
-            # If the monitor specifies a null url we explicitly disable using a proxy
-            proxy = None
-        else:
-            # Otherwise we replace the global proxy setting passed to canary with the
-            # one the monitor specifies
-            proxy = spec["proxy"]["url"]
-
-    # Add extra labels
-    labels = labels | dict(monitor=name)
-
-    # Normalize label order to ensure we can remove labels later
-    labels = {key: labels[key] for key in LABELS}
-
-    header = f"[{name=}] [{interval=}] [{url=}] [{proxy=}]"
-    logging.info(f"{header} | polling")
-
-    # A set to keep track of unique status codes we've seen so that
-    # we can clean up the metrics when this monitor is halted
-    observed_status = set()
-
     try:
+
+        # Hard clamp the interval to minimum of 5s to prevent DOS runaway
+        # Still could be bad if running on a lot of nodes
+        interval = max(MIN_MONITOR_INTERVAL, int(spec["interval"]))
+
+        # Allow this to throw an exception if the url is invalid
+        url = spec["url"]
+        urllib.parse.urlparse(url)
+
+        expected_status = str(spec["status"])
+
+        # If this monitor specifies its own proxy setting
+        if "proxy" in spec:
+            if "url" not in spec["proxy"]:
+                # If the monitor specifies a null url we explicitly disable using a proxy
+                proxy = None
+            else:
+                # Otherwise we replace the global proxy setting passed to canary with the
+                # one the monitor specifies
+                proxy = spec["proxy"]["url"]
+
+        # Add extra labels
+        labels = labels | dict(monitor=name)
+
+        # Normalize label order to ensure we can remove labels later
+        labels = {key: labels[key] for key in LABELS}
+
+        header = f"[{name=}] [{interval=}] [{url=}] [{proxy=}]"
+        logging.info(f"{header} | polling")
+
+        # A set to keep track of unique status codes we've seen so that
+        # we can clean up the metrics when this monitor is halted
+        observed_status = set()
+
         while True:
             # Spawn a task to track the minimum amount of time to the next iteration and return immediately
             interval_task = asyncio.create_task(asyncio.sleep(interval))
@@ -134,7 +135,7 @@ async def Monitor(name: str, spec: dict, labels: dict, proxy: str):
             REQUEST_DURATION_GAUGE.remove(*labels.values())
         except KeyError:
             pass
-        
+
         try:
             logging.debug(f"{header} | removing metric canary_healthy {labels=}")
             HEALTHY_GAUGE.remove(*labels.values())
@@ -159,3 +160,5 @@ async def Monitor(name: str, spec: dict, labels: dict, proxy: str):
                 STATUS_LASTSEEN_GAUGE.remove(*(labels | dict(status=status)).values())
             except KeyError:
                 pass
+
+Monitor = monitor
