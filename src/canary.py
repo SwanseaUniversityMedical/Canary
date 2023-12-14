@@ -51,7 +51,7 @@ logging.basicConfig(
     "--proxy",
     type=URL(),
     default=None,
-    help="URL to a HTTP proxy sever.",
+    help="URL to a HTTP proxy sever to use by default.",
     show_default=True
 )
 def main(*args, **kwargs):

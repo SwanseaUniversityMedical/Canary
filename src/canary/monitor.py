@@ -57,8 +57,17 @@ async def Monitor(name: str, spec: dict, labels: dict, proxy: str):
     url = spec["url"]
     urllib.parse.urlparse(url)
 
-    # TODO handle this as a list of valid statuses
     expected_status = str(spec["status"])
+
+    # If this monitor specifies its own proxy setting
+    if spec["proxy"] is not None:
+        if spec["proxy"]["url"] is None:
+            # If the monitor specifies a null url we explicitly disable using a proxy
+            proxy = None
+        else:
+            # Otherwise we replace the global proxy setting passed to canary with the
+            # one the monitor specifies
+            proxy = spec["proxy"]["url"]
 
     # Add extra labels
     labels = labels | dict(monitor=name)
@@ -66,9 +75,11 @@ async def Monitor(name: str, spec: dict, labels: dict, proxy: str):
     # Normalize label order to ensure we can remove labels later
     labels = {key: labels[key] for key in LABELS}
 
-    header = f"[{name=}] [{interval=}] [{url=}]"
+    header = f"[{name=}] [{interval=}] [{url=}] [{proxy=}]"
     logging.info(f"{header} | polling")
 
+    # A set to keep track of unique status codes we've seen so that
+    # we can clean up the metrics when this monitor is halted
     observed_status = set()
 
     try:
