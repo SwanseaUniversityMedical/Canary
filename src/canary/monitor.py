@@ -16,6 +16,11 @@ LABELS = [
     "monitor",
 ]
 
+REQUEST_DURATION_GAUGE = Gauge(
+    name="canary_request_duration",
+    documentation="Duration of poll event in seconds.",
+    labelnames=LABELS,
+)
 HEALTHY_GAUGE = Gauge(
     name="canary_healthy",
     documentation="Health of the last poll for a url as a boolean 0 (unhealthy) or 1 (healthy).",
@@ -71,6 +76,7 @@ async def Monitor(name: str, spec: dict, labels: dict, proxy: str):
             # Spawn a task to track the minimum amount of time to the next iteration and return immediately
             interval_task = asyncio.create_task(asyncio.sleep(interval))
 
+            start_time = time.time()
             healthy = False
             try:
                 # Poll the url
@@ -89,6 +95,9 @@ async def Monitor(name: str, spec: dict, labels: dict, proxy: str):
 
             except Exception as ex:
                 logging.exception(f"{header} | poll error", exc_info=ex)
+
+            end_time = time.time()
+            REQUEST_DURATION_GAUGE.labels(**labels).set(max(0., end_time - start_time))
 
             # Update the unhealthy metric
             if healthy:
@@ -109,6 +118,12 @@ async def Monitor(name: str, spec: dict, labels: dict, proxy: str):
     finally:
         logging.info(f"{header} | halting")
 
+        try:
+            logging.debug(f"{header} | removing metric canary_request_duration {labels=}")
+            REQUEST_DURATION_GAUGE.remove(*labels.values())
+        except KeyError:
+            pass
+        
         try:
             logging.debug(f"{header} | removing metric canary_healthy {labels=}")
             HEALTHY_GAUGE.remove(*labels.values())
