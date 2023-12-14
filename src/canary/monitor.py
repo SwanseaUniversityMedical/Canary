@@ -8,13 +8,13 @@ from prometheus_client import Gauge
 
 MIN_MONITOR_INTERVAL = 5  # seconds
 
-LABELS = (
+LABELS = [
     "node",
     "pod",
     "namespace",
     "release",
     "monitor",
-)
+]
 
 HEALTHY_GAUGE = Gauge(
     name="canary_healthy",
@@ -30,6 +30,11 @@ UNHEALTHY_LASTSEEN_GAUGE = Gauge(
     name="canary_unhealthy_lastseen",
     documentation="Timestamp of the most recent time a monitor was unhealthy.",
     labelnames=LABELS,
+)
+STATUS_LASTSEEN_GAUGE = Gauge(
+    name="canary_unhealthy_lastseen",
+    documentation="Timestamp of the most recent time a monitor showed a status code.",
+    labelnames=LABELS+["status"],
 )
 
 
@@ -59,6 +64,8 @@ async def Monitor(name: str, spec: dict, labels: dict, proxy: str):
     header = f"[{name=}] [{interval=}] [{url=}]"
     logging.info(f"{header} | polling")
 
+    observed_status = set()
+
     try:
         while True:
             # Spawn a task to track the minimum amount of time to the next iteration and return immediately
@@ -75,6 +82,10 @@ async def Monitor(name: str, spec: dict, labels: dict, proxy: str):
                 # Check if the status code was acceptable
                 healthy = status == expected_status
                 logging.info(f"{header} | poll [{status=}] [{healthy=}]")
+
+                # Update per status code metric
+                observed_status.add(status)
+                STATUS_LASTSEEN_GAUGE.labels(**(labels | dict(status=status))).set(time.time() * 1000.)
 
             except Exception as ex:
                 logging.exception(f"{header} | poll error", exc_info=ex)
@@ -99,16 +110,26 @@ async def Monitor(name: str, spec: dict, labels: dict, proxy: str):
         logging.info(f"{header} | halting")
 
         try:
+            logging.debug(f"{header} | removing metric canary_healthy {labels=}")
             HEALTHY_GAUGE.remove(*labels.values())
         except KeyError:
             pass
 
         try:
+            logging.debug(f"{header} | removing metric canary_healthy_lastseen {labels=}")
             HEALTHY_LASTSEEN_GAUGE.remove(*labels.values())
         except KeyError:
             pass
 
         try:
+            logging.debug(f"{header} | removing metric canary_unhealthy_lastseen {labels=}")
             UNHEALTHY_LASTSEEN_GAUGE.remove(*labels.values())
         except KeyError:
             pass
+
+        for status in observed_status:
+            try:
+                logging.debug(f"{header} | removing metric canary_status_lastseen {labels=}")
+                STATUS_LASTSEEN_GAUGE.remove(*(labels | dict(status=status)).values())
+            except KeyError:
+                pass
