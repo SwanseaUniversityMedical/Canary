@@ -32,7 +32,7 @@ UNHEALTHY_LASTSEEN_GAUGE = Gauge(
     labelnames=LABELS,
 )
 STATUS_LASTSEEN_GAUGE = Gauge(
-    name="canary_unhealthy_lastseen",
+    name="canary_status_lastseen",
     documentation="Timestamp of the most recent time a monitor showed a status code.",
     labelnames=LABELS+["status"],
 )
