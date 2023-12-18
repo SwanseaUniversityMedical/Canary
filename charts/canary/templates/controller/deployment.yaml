@@ -62,7 +62,8 @@ spec:
           {{- include "canary.image" (dict "image" .Values.controller.image) | indent 10 }}
 
           ports:
-            - containerPort: 8080
+            - name: http-metrics
+              containerPort: 8080
 
           envFrom:
             {{ include "canary.envFrom" (dict "extraEnv" .Values.controller.extraEnvFrom) | indent 12 }}

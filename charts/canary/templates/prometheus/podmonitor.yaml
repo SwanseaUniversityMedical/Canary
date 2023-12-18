@@ -24,7 +24,7 @@ spec:
   podMetricsEndpoints:
     - interval: {{ .Values.podMonitor.interval }}
       path: /metrics
-      port: 8080
+      port: http-metrics
   namespaceSelector:
     matchNames:
       - {{ .Release.Namespace }}
