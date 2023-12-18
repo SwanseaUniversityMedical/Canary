@@ -1,6 +1,15 @@
 crds:
   enabled: true
 
+podMonitor:
+  enabled: true
+
+  labels: {}
+  annotations: {}
+
+  interval: 30s
+
+
 controller:
   enabled: true
 
