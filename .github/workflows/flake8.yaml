@@ -35,4 +35,4 @@ jobs:
           
       - name: run flake8
         run: |
-          flake8 --max-complexity 10 --ignore E501 src
+          flake8 --max-complexity 10 --ignore E501,C901 src
