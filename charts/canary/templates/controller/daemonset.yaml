@@ -1,6 +1,6 @@
-{{- if and .Values.controller.enabled (eq .Values.controller.mode "deployment") }}
+{{- if and .Values.controller.enabled (eq .Values.controller.mode "daemonset") }}
 apiVersion: apps/v1
-kind: Deployment
+kind: DaemonSet
 metadata:
   name: {{ include "canary.fullname" . }}-controller
   namespace: {{ .Release.Namespace }}
@@ -20,13 +20,19 @@ metadata:
     {{- end }}
 
 spec:
-  replicas: {{ .Values.controller.deployment.replicas }}
 
   selector:
     matchLabels:
       app: {{ include "canary.labels.app" . }}
       component: controller
       release: {{ .Release.Name }}
+
+  updateStrategy:
+    {{- if eq .Values.controller.daemonset.updateStrategy "RollingUpdate" }}
+    rollingUpdate:
+      maxUnavailable: {{ .Values.controller.daemonset.maxUnavailable }}
+    {{- end }}
+    type: {{ .Values.controller.daemonset.updateStrategy }}
 
   template:
     metadata:
@@ -65,7 +71,7 @@ spec:
             - containerPort: 8080
 
           envFrom:
-            {{ include "canary.envFrom" (dict "extraEnv" .Values.controller.extraEnvFrom) | indent 12 }}
+            {{- include "canary.envFrom" (dict "Release" .Release "Values" .Values "extraEnv" .Values.controller.extraEnvFrom) | indent 12 }}
           env:
             # Make the controller aware of where it is in the cluster
             - name: CANARY_K8S_NODE_NAME
@@ -82,6 +88,6 @@ spec:
                   fieldPath: metadata.namespace
             - name: CANARY_K8S_RELEASE_NAME
               value: {{ .Release.Name }}
-            {{- include "canary.env" (dict "extraEnv" .Values.controller.extraEnv) | indent 12 }}
+            {{- include "canary.env" (dict "Release" .Release "Values" .Values "extraEnv" .Values.controller.extraEnv) | indent 12 }}
 
 {{- end }}

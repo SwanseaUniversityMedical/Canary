@@ -18,11 +18,22 @@ spec:
               properties:
                 url:
                   type: string
+                  description: Url to poll over http(s).
+                proxy:
+                  type: object
+                  properties:
+                    url:
+                      type: string
+                      description: Url to a http proxy to use when polling the target url. Null inherits the controllers default, empty string explicitly disables proxy.
                 interval:
                   type: integer #seconds
                 status:
                   type: integer
                   default: 200
+              required:
+                - url
+                - interval
+                - status
   scope: Namespaced
   names:
     plural: canaryhttpmonitors
