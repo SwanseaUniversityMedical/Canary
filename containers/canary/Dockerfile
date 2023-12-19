@@ -17,7 +17,6 @@ RUN apk del py3-pip && \
     rm -rf /var/cache/apk/*
 
 FROM scratch
-
 COPY --from=base / /
 
 ENTRYPOINT ["python3", "/opt/canary.py"]
