@@ -39,7 +39,7 @@ controller:
 
   image:
     repository: harbor.ukserp.ac.uk/canary/canary
-    tag: 1.6.0
+    tag: 1.7.0
     pullPolicy: IfNotPresent
     pullSecret: ""
     uid: 1001
