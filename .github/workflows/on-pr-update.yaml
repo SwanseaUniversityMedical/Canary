@@ -35,7 +35,7 @@ jobs:
     # Build the container and push it as :pr-42 and :pr-42-fe45b3h
     needs: changes
     if: fromJSON(needs.changes.outputs.changes).canary-container == 'true'
-    uses: SwanseaUniversityMedical/workflows/.github/workflows/on-pr-update-container.yaml@v5.0.0
+    uses: SwanseaUniversityMedical/workflows/.github/workflows/build-and-test-pr-container.yaml@v5.0.0
     with:
       job-name: canary-container
       container-registry: ${{ vars.HARBOR_REGISTRY }}
