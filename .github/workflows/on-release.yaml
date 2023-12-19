@@ -34,7 +34,7 @@ jobs:
     # Build the Airflow container with dags inside and push it as :rc-1.0.0
     needs: changes
     if: fromJSON(needs.changes.outputs.changes).canary-container == 'true'
-    uses: SwanseaUniversityMedical/workflows/.github/workflows/on-release-container.yaml@v5.0.0
+    uses: SwanseaUniversityMedical/workflows/.github/workflows/build-and-test-release-container.yaml@v5.0.0
     with:
       job-name: canary-container
       registry: ${{ vars.HARBOR_REGISTRY }}
