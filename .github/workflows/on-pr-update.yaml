@@ -40,8 +40,7 @@ jobs:
       job-name: canary-container
       registry: ${{ vars.HARBOR_REGISTRY }}
       registry-user: ${{ vars.HARBOR_USER }}
-      registry-project: ${{ vars.HARBOR_PROJECT }}
-      registry-repo: canary
+      registry-repo: ${{ vars.HARBOR_PROJECT }}/canary
       slack-channel: ${{ vars.SLACK_CHANNEL }}
       cosign-public-key: ${{ vars.COSIGN_PUBLIC_KEY }}
       build-file: containers/canary/Dockerfile
@@ -49,7 +48,7 @@ jobs:
     secrets:
       cosign-private-key: ${{ secrets.COSIGN_PRIVATE_KEY }}
       cosign-password: ${{ secrets.COSIGN_PASSWORD }}
-      container-registry-token: ${{ secrets.HARBOR_TOKEN }}
+      registry-token: ${{ secrets.HARBOR_TOKEN }}
       slack-token: ${{ secrets.SLACK_TOKEN }}
 
   canary-chart:
