@@ -4,11 +4,9 @@ RUN apk update && \
     apk add --update --no-cache python3 py3-pip
 
 COPY src/ /opt/
-RUN adduser -D -u 1001 -g '' canary
-USER canary
 
-RUN pip3 install pyclean --no-cache-dir && \
-    pip3 install -r /opt/requirements.txt --no-cache-dir && \
+RUN pip3 install --break-system-packages pyclean --no-cache-dir && \
+    pip3 install --break-system-packages -r /opt/requirements.txt --no-cache-dir && \
     rm /opt/requirements.txt && \
     pyclean -v /usr && \
     pyclean -v ~/ && \
@@ -20,8 +18,6 @@ RUN apk del py3-pip && \
 
 FROM scratch
 COPY --from=base / /
-RUN adduser -D -u 1001 -g '' canary
-USER canary
 
 ENTRYPOINT ["python3", "/opt/canary.py"]
 #CMD ["--help"]
