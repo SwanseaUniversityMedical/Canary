@@ -9,7 +9,7 @@ RUN apk update && \
     rm /opt/requirements.txt && \
     pyclean -v /usr && \
     pyclean -v ~/ && \
-    pip uninstall -y pyclean && \
+    pip uninstall --break-system-packages -y pyclean && \
     apk del py3-pip && \
     rm -rf /var/cache/apk/*
 
