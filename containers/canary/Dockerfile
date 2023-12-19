@@ -3,13 +3,13 @@ FROM alpine:3.19 as base
 COPY src/ /opt/
 
 RUN apk update && apk add --update --no-cache \
-	python3 \
-    py3-pip && \
-    pip install pyclean --no-cache-dir && \
-    pip install -r /opt/requirements.txt --no-cache-dir && \
+	python3 py3-pip && \
+    pip install -u pyclean --no-cache-dir && \
+    pip install -u -r /opt/requirements.txt --no-cache-dir && \
     rm /opt/requirements.txt && \
     pyclean -v /usr && \
-    pip uninstall -y pyclean && \
+    pyclean -v ~/ && \
+    pip uninstall -u -y pyclean && \
     apk del py3-pip && \
     rm -rf /var/cache/apk/*
 
