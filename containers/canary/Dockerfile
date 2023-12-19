@@ -6,6 +6,7 @@ RUN apk update && \
     rm -rf /var/cache/apk/*
 
 COPY src/ /opt/
+RUN adduser -D -u 1001 -g '' canary root
 USER canary
 
 RUN pip install -U pyclean --no-cache-dir && \
@@ -22,6 +23,7 @@ RUN apk del py3-pip && \
 FROM scratch
 
 COPY --from=base / /
+RUN adduser -D -u 1001 -g '' canary root
 USER canary
 
 ENTRYPOINT ["python3", "/opt/canary.py"]
