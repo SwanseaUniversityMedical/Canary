@@ -9,8 +9,8 @@ COPY src/ /opt/
 RUN adduser -D -u 1001 -g '' canary root
 USER canary
 
-RUN pip install -U pyclean --no-cache-dir && \
-    pip install -U -r /opt/requirements.txt --no-cache-dir && \
+RUN pip3 install -U pyclean --no-cache-dir && \
+    pip3 install -U -r /opt/requirements.txt --no-cache-dir && \
     rm /opt/requirements.txt && \
     pyclean -v /usr && \
     pyclean -v ~/ && \
