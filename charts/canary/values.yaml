@@ -45,6 +45,4 @@ controller:
     uid: 1001
     gid: 1001
 
-monitor:
-  example:
-    enabled: false
+monitors: {}
