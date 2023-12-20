@@ -1,0 +1,10 @@
+{{- range $key, $value := .Values.monitors }}
+---
+apiVersion: "canary.ukserp.ac.uk/v1"
+kind: CanaryHTTPMonitor
+metadata:
+  name: {{ $key }}
+  namespace: {{ $.Release.Namespace }}
+spec:
+{{ $value | toYaml | indent 2 }}
+{{- end }}
