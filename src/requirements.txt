@@ -1,5 +1,5 @@
 aiohttp==3.9.1
 click==8.1.7
 kubernetes-asyncio==28.2.1
-prometheus-client==0.19.0
+prometheus-client==0.20.0
 prometheus-async[aiohttp]==22.2.0
