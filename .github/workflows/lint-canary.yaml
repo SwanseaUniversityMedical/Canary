@@ -23,7 +23,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  controller-flake8:
+  canary-flake8:
     runs-on:
       labels: [self-hosted, linux, x64]
       group: light
