@@ -2,10 +2,6 @@ name: Build Canary Container
 
 on:
   pull_request:
-    # Ignore PRs on branches specifically intended for other assets
-    branches-ignore:
-      - '*/canary-chart*'
-      - '*/canary-crds-chart*'
     # Only consider PRs that change files for this asset, including ci scripts
     paths:
       - '.github/workflows/lint-canary-flake8.yaml'
@@ -19,8 +15,6 @@ on:
   push:
     # Only release off of release and maintenance branches for this asset
     branches:
-      - 'maintenance/canary-container/[0-9]+.x.x'
-      - 'maintenance/canary-container/[0-9]+.[0-9]+.x'
       - 'main'
     # Only consider pushes that change files for this asset, including ci scripts
     paths:
@@ -44,7 +38,7 @@ jobs:
   # Job name must be unique across repo to target
   # branch protection rules "required checks" properly!
   canary-container:
-    uses: SwanseaUniversityMedical/workflows/.github/workflows/pr-and-release-container.yaml@v2.0.0-containers
+    uses: SwanseaUniversityMedical/workflows/.github/workflows/pr-and-release-container.yaml@v2.0.1-containers
     with:
       job-name: canary-container
       comment-pr: "true"
