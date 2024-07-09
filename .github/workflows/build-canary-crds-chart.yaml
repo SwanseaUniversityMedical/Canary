@@ -48,12 +48,7 @@ jobs:
       chart: charts/canary/charts/crds
       test-command: |
         helm template $CHART \
-          --values charts/canary/charts/crds/values.yaml \
-          --include-crds \
-          --name-template canary \
-          --namespace canary \
-          --create-namespace \
-          --debug
+          --values charts/canary/charts/crds/values.yaml
 
     secrets:
       cosign-private-key: ${{ secrets.COSIGN_PRIVATE_KEY }}
