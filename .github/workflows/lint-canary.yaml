@@ -2,10 +2,6 @@ name: Lint Canary
 
 on:
   pull_request:
-    # Ignore PRs on branches specifically intended for other assets
-    branches-ignore:
-      - '*/canary-chart*'
-      - '*/canary-crds-chart*'
     # Only consider PRs that change files for this asset, including ci scripts
     paths:
       - '.github/workflows/lint-canary-flake8.yaml'
