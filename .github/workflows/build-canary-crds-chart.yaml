@@ -1,11 +1,11 @@
-name: Build Canary CRDS Chart
+name: Build Canary CRDs Chart
 
 on:
   pull_request:
     # Only consider PRs that change files for this asset, including ci scripts
     paths:
       - '.github/workflows/build-canary-crds-chart.yaml'
-      - 'charts/canary/**'
+      - 'charts/canary-crds/**'
     # Make sure all workflows that are "required checks" for a given
     # branch protection rule have the same paths: and branches-ignore:
     # filters. Otherwise, you can end up in a deadlock waiting on a
@@ -17,7 +17,7 @@ on:
     # Only consider pushes that change files for this asset, including ci scripts
     paths:
       - '.github/workflows/build-canary-crds-chart.yaml'
-      - 'charts/canary/**'
+      - 'charts/canary-crds/**'
 
 permissions:
   contents: write
@@ -42,15 +42,14 @@ jobs:
       registry: ${{ vars.HARBOR_REGISTRY }}
       registry-user: ${{ vars.HARBOR_USER }}
       registry-project: ${{ vars.HARBOR_PROJECT }}
-      registry-repo: canary
+      registry-repo: canary-crds
       release-tag-format: 'canary-crds-chart-${version}'
       cosign-public-key: ${{ vars.COSIGN_PUBLIC_KEY }}
-      chart: charts/canary/charts/crds
+      chart: charts/canary-crds
       test-command: |
         helm template $CHART \
-          --values charts/canary/charts/crds/values.yaml \
           --include-crds \
-          --name-template canary \
+          --name-template canary-crds \
           --namespace canary \
           --create-namespace \
           --debug
