@@ -1,3 +1,16 @@
 {
-  "$schema": "https://docs.renovatebot.com/renovate-schema.json"
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    ":enableRenovate"
+  ],
+  "hostRules": [
+    {
+      "hostType": "docker",
+      "matchHost": "harbor.ukserp.ac.uk",
+      "username": "robot$canary-renovate",
+      "encrypted": {
+        "password": "wcFMA8VSrg/pGdrLARAAhPRCvFqvqnnxk9IaFIAnaSiuldWaxTUp8pSgyGPcgfM4PWvPTd+qrtgNcv9xEuOB89J1gavI3MwSq0uA+d/2U2BVCNElMox/w042zr/IHaffqKGRklGumj1Lx5JQEOVubvrFQy1whOZwqJ7/DWD/sXKR1RqOzFB4c1X6UOv7+bNM0aQBX/CqzS1vftEuC10WW6ooOmxqxOY8OxXi74/k62Q1Oq07y/v+k2YYjpzUD8kyPTTU4wm0aW9oyuhLmTeKUWAkVltd9So9wDdZvKFwV/QosoVSimill0Q4m72Ksq8Do9X8B0US2ea3ko0Mvfj6OuEXb8eF7t9bCgS9B07dGKuYtuCvt9sOcwyqWRrclmYYTtiKOHdeQ4ewplvMyjE3a0fIpQUefXU7U8KzVuEwbm1uBMj/7Cz3JsfIomLhAafnxIZ2cDX3qkwD/wAZQhcLKEyDeS4t8Fjv29IR3gyxzA5isUUzks3qzf87ScnEBACLsQy9hKlrIHxX3Tcd3zECH6plkabxj1o3DCFjQjU1DxjshkwJhUvjHCbI+8wjnpB5m9vSXOrWH7tE0nOdHv4l/q6MIxcQsLpKMPUtJrDpRJeZf4MWfu1eB6miK1EAAVi6JxuElhiIYW77qC6/y6/EaQVywyNzHHSXUrxj/Qgd/djmidgDMMgh2uqRjtQT0E7ShQFjweYY3eqyvsC4u7s4sMCCTchmSKgxOxYIO5/oKol19ejKIi+oNobvl/kAsQwQB4LYRwkhRJkYLRply5QW84Egq9yiFzgulXhsVil51fje6R/w7i7k6MDXo37S/Uf9zCmXCycHNglrAb2Ptil2vTeFIvLQaOAWhUYcq7Lngcy0hcr/t3g"
+      }
+    }
+  ]
 }
