@@ -4,7 +4,7 @@ on:
   pull_request:
     # Only consider PRs that change files for this asset, including ci scripts
     paths:
-      - '.github/workflows/lint-canary-flake8.yaml'
+      - '.github/workflows/lint-canary.yaml'
       - '.github/workflows/build-canary-container.yaml'
       - 'containers/canary/**'
       - 'src/**'
@@ -20,20 +20,7 @@ concurrency:
 
 jobs:
   canary-flake8:
-    runs-on:
-      labels: [self-hosted, linux, x64]
-      group: light
-    
-    steps:
-      - name: clone repo
-        uses: actions/checkout@v4
-        
-      - name: install flake8
-        run: pip install flake8
-        
-      - name: install flake8 annotations
-        uses: rbialon/flake8-annotations@v1
-          
-      - name: run flake8
-        run: |
-          flake8 --config=".github/.flake8" src
+    uses: SwanseaUniversityMedical/workflows/.github/workflows/flake8.yaml@v1.0.0-flake8
+    with:
+      config-file: '.github/.flake8'
+      source-path: 'src'
